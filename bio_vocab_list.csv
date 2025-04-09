@@ -1,0 +1,94 @@
+英文单词名,中文单词名,单词中文描述,所属单元,单词重要等级
+cell,细胞,生物体的基本结构和功能单位,Unit 1: Cell Biology,高
+nucleus,细胞核,包含遗传物质DNA的控制中心,Unit 1: Cell Biology,高
+cytoplasm,细胞质,细胞内胶状物质，容纳细胞器,Unit 1: Cell Biology,中
+cell membrane,细胞膜,控制物质进出细胞的半透膜,Unit 1: Cell Biology,高
+mitochondria,线粒体,进行细胞呼吸并产生能量的细胞器,Unit 1: Cell Biology,高
+vacuole,液泡,储存水、营养物质或废物的囊状结构（植物细胞较大）,Unit 1: Cell Biology,中
+chloroplast,叶绿体,植物细胞中进行光合作用的场所（含叶绿素）,Unit 1: Cell Biology,高
+cell wall,细胞壁,植物细胞外层的支持和保护结构（主要成分为纤维素）,Unit 1: Cell Biology,中
+tissue,组织,由相似细胞组成的功能群体（如肌肉组织、上皮组织）,Unit 2: Organization of Organisms,中
+organ,器官,由多种组织构成的执行特定功能的结构（如心脏、肝脏）,Unit 2: Organization of Organisms,中
+system,系统,由多个器官协同工作组成的功能整体（如消化系统、循环系统）,Unit 2: Organization of Organisms,高
+digestive system,消化系统,负责食物分解和吸收的器官系统,Unit 2: Organization of Organisms,高
+circulatory system,循环系统,运输血液、氧气和营养物质的系统,Unit 2: Organization of Organisms,高
+osmosis,渗透作用,水分子通过半透膜的扩散现象（从低浓度到高浓度）,Unit 3: Movement into and out of Cells,高
+diffusion,扩散,物质从高浓度区域向低浓度区域的被动运输,Unit 3: Movement into and out of Cells,高
+active transport,主动运输,需要能量的物质跨膜运输（逆浓度梯度）,Unit 3: Movement into and out of Cells,高
+glucose,葡萄糖,细胞呼吸的主要能源物质（单糖）,Unit 4: Biological Molecules,高
+starch,淀粉,植物储存能量的多糖（遇碘变蓝）,Unit 4: Biological Molecules,高
+glycogen,糖原,动物体内储存能量的多糖（主要在肝脏和肌肉）,Unit 4: Biological Molecules,中
+lipid,脂质,包括脂肪、磷脂和固醇，储存能量并构成膜结构,Unit 4: Biological Molecules,高
+protein,蛋白质,由氨基酸组成的生物大分子，参与结构和酶功能,Unit 4: Biological Molecules,高
+amino acid,氨基酸,蛋白质的基本组成单位（共20种）,Unit 4: Biological Molecules,中
+enzyme,酶,生物催化剂，加速化学反应（通常为蛋白质）,Unit 5: Enzymes,高
+substrate,底物,酶作用的特定物质（如淀粉酶作用于淀粉）,Unit 5: Enzymes,中
+active site,活性位点,酶分子上与底物结合的特定区域,Unit 5: Enzymes,中
+denaturation,变性,高温或pH变化导致酶结构破坏并失去功能,Unit 5: Enzymes,高
+photosynthesis,光合作用,植物利用光能将二氧化碳和水转化为葡萄糖和氧气的过程,Unit 6: Plant Physiology,高
+chlorophyll,叶绿素,叶绿体中捕获光能的绿色色素,Unit 6: Plant Physiology,高
+stomata,气孔,叶片表面控制气体交换和水分散失的小孔（由保卫细胞控制）,Unit 6: Plant Physiology,中
+transpiration,蒸腾作用,植物通过叶片气孔散失水分的过程,Unit 6: Plant Physiology,中
+respiration,呼吸作用,细胞将葡萄糖分解为能量（ATP）的过程,Unit 7: Human Physiology,高
+aerobic respiration,有氧呼吸,需要氧气参与的呼吸作用（产生大量ATP）,Unit 7: Human Physiology,高
+anaerobic respiration,无氧呼吸,无需氧气的呼吸作用（产生少量ATP，如肌肉疲劳时）,Unit 7: Human Physiology,中
+glucose,葡萄糖,呼吸作用的主要底物,Unit 7: Human Physiology,高
+ATP,三磷酸腺苷,细胞内的直接能量货币,Unit 7: Human Physiology,高
+heart,心脏,循环系统的肌肉泵，推动血液流动,Unit 7: Human Physiology,高
+artery,动脉,将血液从心脏输送到身体各部分的血管（壁厚、弹性大）,Unit 7: Human Physiology,中
+vein,静脉,将血液带回心脏的血管（壁薄、含瓣膜）,Unit 7: Human Physiology,中
+capillary,毛细血管,连接动脉和静脉的微小血管，物质交换场所,Unit 7: Human Physiology,中
+lung,肺,呼吸系统的主要器官，进行气体交换,Unit 7: Human Physiology,高
+trachea,气管,连接喉和支气管的呼吸管道（含软骨环）,Unit 7: Human Physiology,中
+bronchus,支气管,气管分支进入肺部的管道,Unit 7: Human Physiology,中
+alveoli,肺泡,肺部微小气囊，气体交换的场所（表面积大）,Unit 7: Human Physiology,高
+kidney,肾脏,排泄系统的主要器官，过滤血液形成尿液,Unit 7: Human Physiology,高
+ureter,输尿管,将尿液从肾脏输送到膀胱的管道,Unit 7: Human Physiology,中
+bladder,膀胱,储存尿液的肌肉囊,Unit 7: Human Physiology,中
+neurone,神经元,神经系统的基本单位，传递电信号,Unit 8: Coordination and Response,高
+synapse,突触,神经元之间的连接间隙，通过神经递质传递信号,Unit 8: Coordination and Response,中
+reflex,反射,快速、自动的反应（如眨眼反射，无需大脑参与）,Unit 8: Coordination and Response,高
+hormone,激素,由内分泌腺分泌的化学信使（如胰岛素、肾上腺素）,Unit 8: Coordination and Response,高
+pancreas,胰腺,分泌胰岛素调节血糖水平的腺体,Unit 8: Coordination and Response,高
+ovary,卵巢,女性生殖器官，产生卵细胞和雌性激素,Unit 9: Reproduction,高
+testis,睾丸,男性生殖器官，产生精子和雄性激素,Unit 9: Reproduction,高
+sperm,精子,男性生殖细胞（单细胞，有尾能游动）,Unit 9: Reproduction,高
+egg,卵细胞,女性生殖细胞（含丰富营养物质）,Unit 9: Reproduction,高
+fertilization,受精,精子与卵细胞结合形成受精卵的过程,Unit 9: Reproduction,高
+zygote,受精卵,受精后的细胞（ diploid，含成对染色体）,Unit 9: Reproduction,高
+embryo,胚胎,受精卵发育的早期阶段（在子宫内着床）,Unit 9: Reproduction,中
+menstruation,月经,女性周期性子宫内膜脱落和出血的过程,Unit 9: Reproduction,中
+chromosome,染色体,细胞核内由DNA和蛋白质组成的结构（人类有23对）,Unit 10: Genetics,高
+DNA,脱氧核糖核酸,携带遗传信息的双螺旋分子,Unit 10: Genetics,高
+gene,基因,DNA上的功能片段，控制性状（如眼睛颜色）,Unit 10: Genetics,高
+allele,等位基因,同一基因的不同形式（如显性和隐性等位基因）,Unit 10: Genetics,高
+dominant,显性,在杂合子中表现出的性状（用大写字母表示，如A）,Unit 10: Genetics,高
+recessive,隐性,在杂合子中被掩盖的性状（用小写字母表示，如a）,Unit 10: Genetics,高
+homozygous,纯合子,具有两个相同等位基因的个体（如AA或aa）,Unit 10: Genetics,中
+heterozygous,杂合子,具有两个不同等位基因的个体（如Aa）,Unit 10: Genetics,中
+phenotype,表现型,个体可见的性状（如棕色眼睛）,Unit 10: Genetics,中
+genotype,基因型,个体的基因组成（如AA、Aa、aa）,Unit 10: Genetics,中
+mutation,突变,DNA序列的永久性改变（可能导致新性状）,Unit 10: Genetics,高
+evolution,进化,物种随时间逐渐变化的过程（通过自然选择）,Unit 11: Evolution and Biodiversity,高
+natural selection,自然选择,适者生存的过程（达尔文提出）,Unit 11: Evolution and Biodiversity,高
+species,物种,能够相互交配并产生可育后代的生物群体,Unit 11: Evolution and Biodiversity,高
+biodiversity,生物多样性,地球上所有生物及其生态系统的多样性,Unit 11: Evolution and Biodiversity,高
+habitat,栖息地,生物生活的具体环境（如森林、草原）,Unit 12: Ecology,中
+population,种群,同一物种在同一区域内的所有个体,Unit 12: Ecology,中
+community,群落,同一区域内所有不同物种的集合,Unit 12: Ecology,中
+ecosystem,生态系统,生物群落与其物理环境的相互作用整体,Unit 12: Ecology,高
+producer,生产者,通过光合作用制造有机物的生物（如植物）,Unit 12: Ecology,高
+consumer,消费者,依赖其他生物获取能量的生物（如动物）,Unit 12: Ecology,高
+decomposer,分解者,分解有机物并回收养分的生物（如真菌、细菌）,Unit 12: Ecology,高
+food chain,食物链,生物之间的能量传递链（如草→兔→鹰）,Unit 12: Ecology,中
+food web,食物网,多个食物链交织形成的复杂网络,Unit 12: Ecology,中
+carbon cycle,碳循环,碳在生物和环境之间的循环（如光合作用、呼吸作用）,Unit 12: Ecology,高
+nitrogen cycle,氮循环,氮在大气、土壤和生物之间的转化过程,Unit 12: Ecology,中
+pollution,污染,有害物质进入环境导致生态破坏（如水污染、空气污染）,Unit 13: Human Impact on the Environment,高
+deforestation,森林砍伐,大面积森林被破坏（导致水土流失和气候变化）,Unit 13: Human Impact on the Environment,高
+global warming,全球变暖,由于温室气体排放导致的地球温度上升,Unit 13: Human Impact on the Environment,高
+biotechnology,生物技术,利用生物系统或生物体进行技术开发（如基因工程）,Unit 14: Biotechnology and Genetic Engineering,高
+fermentation,发酵,微生物在无氧条件下分解有机物的过程（如酿酒、制酸奶）,Unit 14: Biotechnology and Genetic Engineering,中
+genetic engineering,基因工程,人工修改生物体DNA的技术（如转基因作物）,Unit 14: Biotechnology and Genetic Engineering,高
+culture medium,培养基,用于培养微生物的营养物质（如琼脂）,Unit 14: Biotechnology and Genetic Engineering,中
+antibiotic,抗生素,抑制或杀死细菌的药物（如青霉素）,Unit 14: Biotechnology and Genetic Engineering,高

@@ -1,33 +1,55 @@
-const path = require('path');
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
-// 配置存储
+// Create uploads directory if it doesn't exist
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configure storage
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
   },
-  filename: function (req, file, cb) {
-    cb(null, `${Date.now()}-${file.originalname}`);
+  filename: (req, file, cb) => {
+    // Generate unique filename with timestamp
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
   }
 });
 
-// 过滤文件类型
+// Filter for allowed file types
 const fileFilter = (req, file, cb) => {
-  const filetypes = /xlsx|xls|csv/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  // Define allowed file types
+  const allowedFileTypes = {
+    'text/csv': true,
+    'application/vnd.ms-excel': true,
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': true
+  };
   
-  if (extname && mimetype) {
-    return cb(null, true);
+  const mimetype = file.mimetype;
+  
+  if (allowedFileTypes[mimetype]) {
+    cb(null, true);
   } else {
-    cb(new Error('仅支持Excel和CSV文件'));
+    cb(new Error('Invalid file type. Only CSV and Excel files are allowed.'), false);
   }
 };
 
-const upload = multer({ 
+// Multer configuration
+const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB限制
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
 });
 
-module.exports = upload; 
+// Export middleware
+module.exports = {
+  uploadFile: upload.single('file'),
+  uploadDir
+}; 

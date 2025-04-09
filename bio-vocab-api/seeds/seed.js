@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const Module = require('../models/Module');
+const Module = require('../models/moduleModel');
 const Term = require('../models/Term');
 
 // 加载环境变量
@@ -41,69 +41,75 @@ const users = [
 
 const modules = [
   {
-    title: 'Cell Structure',
+    name: 'Cell Structure',
     description: '基础细胞结构相关词汇',
-    language: 'en-zh',
-    icon: 'o_science'
+    gradeLevel: '10',
+    category: '分子生物学',
+    difficulty: 2,
+    isActive: true
   },
   {
-    title: 'DNA & Genetics',
+    name: 'DNA & Genetics',
     description: 'DNA和遗传学相关词汇',
-    language: 'en-zh',
-    icon: 'o_biotech'
+    gradeLevel: '11',
+    category: '遗传学',
+    difficulty: 3,
+    isActive: true
   },
   {
-    title: 'Plant Biology',
+    name: 'Plant Biology',
     description: '植物生物学相关词汇',
-    language: 'en-zh',
-    icon: 'o_eco'
+    gradeLevel: '9',
+    category: '植物学',
+    difficulty: 1,
+    isActive: true
   }
 ];
 
 const cellTerms = [
   {
-    term: 'Cell',
+    english: 'Cell',
+    chinese: '细胞',
     definition: 'The basic structural and functional unit of all organisms.',
-    foreignTerm: '细胞',
     notes: 'From Latin "cella" meaning "small room"'
   },
   {
-    term: 'Nucleus',
+    english: 'Nucleus',
+    chinese: '细胞核',
     definition: 'A membrane-bound organelle that contains the cell\'s genetic material.',
-    foreignTerm: '细胞核',
     notes: 'From Latin "nucleus" meaning "kernel"'
   },
   {
-    term: 'Mitochondria',
+    english: 'Mitochondria',
+    chinese: '线粒体',
     definition: 'Organelles that produce energy for the cell through cellular respiration.',
-    foreignTerm: '线粒体',
     notes: 'Known as the "powerhouse of the cell"'
   },
   {
-    term: 'Ribosome',
+    english: 'Ribosome',
+    chinese: '核糖体',
     definition: 'Organelles that synthesize proteins according to the genetic instructions.',
-    foreignTerm: '核糖体',
     notes: 'Can be found free in cytoplasm or attached to endoplasmic reticulum'
   }
 ];
 
 const dnaTerms = [
   {
-    term: 'DNA',
+    english: 'DNA',
+    chinese: '脱氧核糖核酸',
     definition: 'Deoxyribonucleic acid, a molecule that carries genetic instructions.',
-    foreignTerm: '脱氧核糖核酸',
     notes: 'Forms a double helix structure'
   },
   {
-    term: 'Gene',
+    english: 'Gene',
+    chinese: '基因',
     definition: 'A sequence of DNA that codes for a specific protein or trait.',
-    foreignTerm: '基因',
     notes: 'From Greek "genos" meaning "birth, origin"'
   },
   {
-    term: 'Chromosome',
+    english: 'Chromosome',
+    chinese: '染色体',
     definition: 'A thread-like structure of nucleic acids and protein in the cell nucleus.',
-    foreignTerm: '染色体',
     notes: 'Humans typically have 46 chromosomes'
   }
 ];
@@ -128,18 +134,24 @@ const seedData = async () => {
     
     console.log(`已创建 ${createdUsers.length} 位用户`);
     
+    // 获取管理员用户
+    const adminUser = createdUsers.find(user => user.isAdmin);
+    
     // 创建模块
     const createdModules = [];
     for (const module of modules) {
-      const newModule = await Module.create(module);
+      const newModule = await Module.create({
+        ...module,
+        createdBy: adminUser._id
+      });
       createdModules.push(newModule);
     }
     
     console.log(`已创建 ${createdModules.length} 个模块`);
     
     // 创建词汇
-    const cellModule = createdModules.find(m => m.title === 'Cell Structure');
-    const dnaModule = createdModules.find(m => m.title === 'DNA & Genetics');
+    const cellModule = createdModules.find(m => m.name === 'Cell Structure');
+    const dnaModule = createdModules.find(m => m.name === 'DNA & Genetics');
     
     let termCount = 0;
     
@@ -147,7 +159,8 @@ const seedData = async () => {
     for (const term of cellTerms) {
       await Term.create({
         ...term,
-        moduleId: cellModule._id
+        moduleId: cellModule._id,
+        createdBy: adminUser._id
       });
       termCount++;
     }
@@ -156,16 +169,13 @@ const seedData = async () => {
     for (const term of dnaTerms) {
       await Term.create({
         ...term,
-        moduleId: dnaModule._id
+        moduleId: dnaModule._id,
+        createdBy: adminUser._id
       });
       termCount++;
     }
     
     console.log(`已创建 ${termCount} 个词汇条目`);
-    
-    // 更新模块词汇数量
-    await Module.findByIdAndUpdate(cellModule._id, { totalTerms: cellTerms.length });
-    await Module.findByIdAndUpdate(dnaModule._id, { totalTerms: dnaTerms.length });
     
     console.log('数据填充完成!');
     process.exit(0);

@@ -1,35 +1,36 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: import.meta.env.VITE_API_URL || '/api',
+  timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   }
 });
 
-// 请求拦截器，添加token到请求头
+// Add a request interceptor to add the auth token
 api.interceptors.request.use(
-  (config) => {
+  config => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => {
+    return Promise.reject(error);
+  }
 );
 
-// 响应拦截器，处理常见错误
+// Add a response interceptor to handle errors
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
+    // Handle session expiration
     if (error.response && error.response.status === 401) {
-      // 令牌过期，退出登录
       localStorage.removeItem('token');
-      localStorage.removeItem('bioVocabUser');
-      window.location = '/login';
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }
