@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import api from '../services/api'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -29,13 +30,26 @@ export const useUserStore = defineStore('user', {
       localStorage.setItem('bioVocabUser', JSON.stringify(user))
     },
     
-    loadUser() {
+    async loadUser() {
+      const token = localStorage.getItem('token')
       const userData = localStorage.getItem('bioVocabUser')
-      if (userData) {
+      
+      if (token && userData) {
         this.user = JSON.parse(userData)
         this.isAuthenticated = true
-        this.loadProgress()
-        return true
+        
+        // 验证token有效性
+        try {
+          const response = await api.get('/auth/me')
+          this.user = response.data
+          localStorage.setItem('bioVocabUser', JSON.stringify(this.user))
+          await this.loadProgress()
+          return true
+        } catch (error) {
+          console.error('Token验证失败:', error)
+          this.logout()
+          return false
+        }
       }
       return false
     },
@@ -44,16 +58,54 @@ export const useUserStore = defineStore('user', {
       this.user = null
       this.isAuthenticated = false
       localStorage.removeItem('bioVocabUser')
+      localStorage.removeItem('token')
     },
     
     async loadProgress() {
-      // In a real app, this would fetch from Google Sheets API
-      // For prototype, we'll use mock data
+      try {
+        // 从API获取学习进度
+        const response = await api.get('/progress')
+        if (response.data) {
+          // 更新用户总体学习进度
+          this.progress = {
+            wordsLearned: this.user.progress?.wordsLearned || 0,
+            totalWords: this.user.progress?.totalWords || 0,
+            dailyGoal: 5, // 这可以从用户设置中获取
+            streak: 5 // 这需要单独的逻辑计算
+          }
+          
+          // 获取模块列表和进度
+          const modulesResponse = await api.get('/modules')
+          if (modulesResponse.data) {
+            this.learningModules = modulesResponse.data.map(module => {
+              // 查找用户对应模块的进度
+              const moduleProgress = response.data.find(p => 
+                p.moduleId && p.moduleId._id === module._id
+              )
+              
+              return {
+                id: module._id,
+                title: module.title,
+                totalTerms: module.totalTerms || 0,
+                progress: moduleProgress ? moduleProgress.progress : 0,
+                icon: module.icon || 'o_science'
+              }
+            })
+          }
+        }
+      } catch (error) {
+        console.error('加载进度失败:', error)
+        // 使用模拟数据作为后备
+        this.useDefaultProgressData()
+      }
+    },
+    
+    useDefaultProgressData() {
       this.progress = {
-        wordsLearned: 14,
-        totalWords: 20,
+        wordsLearned: 0,
+        totalWords: 0,
         dailyGoal: 5,
-        streak: 5
+        streak: 0
       }
       
       this.learningModules = [
@@ -61,7 +113,7 @@ export const useUserStore = defineStore('user', {
           id: 'cell-structure',
           title: 'Cell Structure',
           totalTerms: 15,
-          progress: 70,
+          progress: 0,
           icon: 'o_science'
         },
         {
@@ -81,67 +133,87 @@ export const useUserStore = defineStore('user', {
       ]
     },
     
-    updateProgress(moduleId, completed) {
-      // Update progress logic would go here
-      // Would sync with Google Sheets in production
-      this.progress.wordsLearned += completed
-      
-      const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId)
-      if (moduleIndex >= 0) {
-        const module = this.learningModules[moduleIndex]
-        module.progress = Math.min(100, Math.floor((module.progress + 10)))
-        this.learningModules[moduleIndex] = module
+    async updateProgress(moduleId, completedTermIds) {
+      try {
+        // 更新API中的进度
+        const response = await api.put(`/progress/module/${moduleId}`, {
+          completedTermIds
+        })
+        
+        if (response.data) {
+          // 更新本地模块进度
+          const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId)
+          if (moduleIndex >= 0) {
+            this.learningModules[moduleIndex].progress = response.data.progress
+          }
+          
+          // 更新总体进度
+          this.progress.wordsLearned = this.user.progress?.wordsLearned || 0
+          this.progress.totalWords = this.user.progress?.totalWords || 0
+        }
+      } catch (error) {
+        console.error('更新进度失败:', error)
       }
     },
 
     // Admin功能 - 加载所有用户
     async loadAllUsers() {
-      // 模拟API调用获取所有用户
-      this.allUsers = [
-        {
-          id: 'user_123456',
-          name: 'Emily Chen',
-          email: 'emily@example.com',
-          gradeLevel: '10',
-          lastLogin: '2023-05-15',
-          progress: 75,
-          isAdmin: false
-        },
-        {
-          id: 'user_789012',
-          name: 'David Wang',
-          email: 'david@example.com',
-          gradeLevel: '11',
-          lastLogin: '2023-05-14',
-          progress: 45,
-          isAdmin: false
-        },
-        {
-          id: 'admin_001',
-          name: 'Admin User',
-          email: 'admin@biovocab.com',
-          gradeLevel: 'Teacher',
-          lastLogin: '2023-05-16',
-          progress: 100,
-          isAdmin: true
+      try {
+        if (!this.isAdmin) {
+          throw new Error('只有管理员可以访问用户列表')
         }
-      ]
-      return this.allUsers
+        
+        const response = await api.get('/users')
+        if (response.data) {
+          this.allUsers = response.data
+        }
+        return this.allUsers
+      } catch (error) {
+        console.error('加载用户列表失败:', error)
+        return []
+      }
     },
 
     // 添加或更新用户
-    addOrUpdateUser(user) {
-      const index = this.allUsers.findIndex(u => u.id === user.id)
-      if (index >= 0) {
-        this.allUsers[index] = { ...this.allUsers[index], ...user }
-      } else {
-        this.allUsers.push(user)
+    async addOrUpdateUser(user) {
+      try {
+        if (!this.isAdmin) {
+          throw new Error('只有管理员可以管理用户')
+        }
+        
+        let response
+        if (user._id) {
+          // 更新现有用户
+          response = await api.put(`/users/${user._id}`, user)
+        } else {
+          // 创建新用户
+          response = await api.post('/users', user)
+        }
+        
+        if (response.data) {
+          await this.loadAllUsers() // 重新加载用户列表
+          return response.data
+        }
+      } catch (error) {
+        console.error('用户保存失败:', error)
+        throw error
       }
     },
 
     // 删除用户
-    deleteUser(userId) {
-      this.allUsers = this.allUsers.filter(user => user.id !== userId)
+    async deleteUser(userId) {
+      try {
+        if (!this.isAdmin) {
+          throw new Error('只有管理员可以删除用户')
+        }
+        
+        await api.delete(`/users/${userId}`)
+        await this.loadAllUsers() // 重新加载用户列表
+        return true
+      } catch (error) {
+        console.error('用户删除失败:', error)
+        throw error
+      }
     },
 
     // 登录为管理员
@@ -162,19 +234,20 @@ export const useUserStore = defineStore('user', {
         throw new Error('未登录，无法更新个人资料')
       }
       
-      // 在真实应用中，这里会调用API将数据保存到后端
-      // 目前只更新本地存储
-      this.user = {
-        ...this.user,
-        name: profileData.name || this.user.name,
-        email: profileData.email || this.user.email,
-        grade: profileData.grade || this.user.grade
+      try {
+        const response = await api.put(`/users/${this.user._id}`, profileData)
+        if (response.data) {
+          this.user = {
+            ...this.user,
+            ...response.data
+          }
+          localStorage.setItem('bioVocabUser', JSON.stringify(this.user))
+          return true
+        }
+      } catch (error) {
+        console.error('更新个人资料失败:', error)
+        throw error
       }
-      
-      // 更新本地存储
-      localStorage.setItem('bioVocabUser', JSON.stringify(this.user))
-      
-      return true
     },
 
     // 更新用户密码
@@ -183,14 +256,15 @@ export const useUserStore = defineStore('user', {
         throw new Error('未登录，无法修改密码')
       }
       
-      // 在真实应用中，这里会验证当前密码并通过API更新密码
-      // 目前只做简单模拟
-      if (currentPassword === 'password') { // 模拟密码验证
-        // 密码更新成功
-        console.log('密码已更新')
+      try {
+        await api.put(`/users/${this.user._id}/password`, {
+          currentPassword,
+          newPassword
+        })
         return true
-      } else {
-        throw new Error('当前密码不正确')
+      } catch (error) {
+        console.error('密码更新失败:', error)
+        throw error
       }
     }
   }

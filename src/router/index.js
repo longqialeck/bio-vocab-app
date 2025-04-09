@@ -65,6 +65,26 @@ const routes = [
         path: 'vocabulary',
         name: 'admin-vocabulary',
         component: () => import('../views/admin/VocabularyManagement.vue'),
+      },
+      {
+        path: 'progress',
+        name: 'admin-progress',
+        component: () => import('../views/admin/ProgressManagement.vue'),
+      },
+      {
+        path: 'settings',
+        name: 'admin-settings',
+        component: () => import('../views/admin/SystemSettings.vue'),
+      },
+      {
+        path: 'stats',
+        name: 'admin-stats',
+        component: () => import('../views/admin/DataStatistics.vue'),
+      },
+      {
+        path: 'logs',
+        name: 'admin-logs',
+        component: () => import('../views/admin/SystemLogs.vue'),
       }
     ]
   }

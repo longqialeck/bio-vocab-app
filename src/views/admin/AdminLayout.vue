@@ -1,29 +1,24 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="hHh LpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn
-          flat
           dense
+          flat
           round
           icon="menu"
-          aria-label="Menu"
           @click="leftDrawerOpen = !leftDrawerOpen"
         />
-
-        <q-toolbar-title>
+        <q-toolbar-title class="cursor-pointer" @click="navigateTo('/')">
           BioVocab 管理系统
         </q-toolbar-title>
-
-        <q-btn-dropdown flat icon="person">
-          <q-list>
-            <q-item clickable v-close-popup @click="logout">
-              <q-item-section>
-                <q-item-label>退出登录</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
+        <q-space />
+        <q-btn flat round dense icon="notifications">
+          <q-badge color="red" floating>
+            2
+          </q-badge>
+        </q-btn>
+        <q-btn flat round dense icon="person" />
       </q-toolbar>
     </q-header>
 
@@ -33,121 +28,167 @@
       bordered
       class="bg-grey-1"
     >
-      <q-list>
-        <q-item-label header class="text-grey-8">
-          管理菜单
-        </q-item-label>
+      <q-scroll-area class="fit">
+        <q-list padding>
+          <q-item-label header class="text-grey-8">
+            管理菜单
+          </q-item-label>
 
-        <EssentialLink
-          v-for="link in essentialLinks"
-          :key="link.title"
-          v-bind="link"
-        />
-      </q-list>
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-dashboard')"
+            @click="navigateTo('/admin')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="dashboard" />
+            </q-item-section>
+            <q-item-section>仪表盘</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-users')"
+            @click="navigateTo('/admin/users')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="people" />
+            </q-item-section>
+            <q-item-section>用户管理</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-vocabulary')"
+            @click="navigateTo('/admin/vocabulary')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="book" />
+            </q-item-section>
+            <q-item-section>词汇管理</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-progress')"
+            @click="navigateTo('/admin/progress')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="trending_up" />
+            </q-item-section>
+            <q-item-section>学习进度</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-reports')"
+            @click="navigateTo('/admin/reports')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="bar_chart" />
+            </q-item-section>
+            <q-item-section>报表分析</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-logs')"
+            @click="navigateTo('/admin/logs')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="receipt_long" />
+            </q-item-section>
+            <q-item-section>系统日志</q-item-section>
+          </q-item>
+
+          <q-item
+            clickable
+            v-ripple
+            :active="isCurrentRoute('admin-settings')"
+            @click="navigateTo('/admin/settings')"
+            active-class="bg-primary text-white"
+          >
+            <q-item-section avatar>
+              <q-icon name="settings" />
+            </q-item-section>
+            <q-item-section>系统设置</q-item-section>
+          </q-item>
+
+          <q-separator class="q-my-sm" />
+
+          <q-item
+            clickable
+            v-ripple
+            @click="navigateTo('/dashboard')"
+          >
+            <q-item-section avatar>
+              <q-icon name="exit_to_app" />
+            </q-item-section>
+            <q-item-section>返回应用</q-item-section>
+          </q-item>
+        </q-list>
+      </q-scroll-area>
     </q-drawer>
 
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-footer elevated class="bg-grey-8 text-white">
+      <q-toolbar>
+        <q-toolbar-title class="text-center text-caption">
+          BioVocab 管理系统 &copy; {{ currentYear }} 版权所有
+        </q-toolbar-title>
+      </q-toolbar>
+    </q-footer>
   </q-layout>
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '../../stores/userStore'
-
-// 管理菜单链接
-const linksList = [
-  {
-    title: '仪表盘',
-    caption: '系统概览',
-    icon: 'dashboard',
-    routeName: 'admin-dashboard'
-  },
-  {
-    title: '用户管理',
-    caption: '管理系统用户',
-    icon: 'people',
-    routeName: 'admin-users'
-  },
-  {
-    title: '词汇管理',
-    caption: '管理词汇模块和内容',
-    icon: 'menu_book',
-    routeName: 'admin-vocabulary'
-  },
-  {
-    title: '返回前台',
-    caption: '回到学习界面',
-    icon: 'arrow_back',
-    routeName: 'dashboard'
-  }
-]
-
-// 链接组件
-const EssentialLink = defineComponent({
-  name: 'EssentialLink',
-  props: {
-    title: {
-      type: String,
-      required: true
-    },
-    caption: {
-      type: String,
-      default: ''
-    },
-    icon: {
-      type: String,
-      default: ''
-    },
-    routeName: {
-      type: String,
-      default: ''
-    }
-  },
-  setup(props) {
-    const router = useRouter()
-    
-    const navigateTo = () => {
-      router.push({ name: props.routeName })
-    }
-    
-    return { navigateTo }
-  },
-  template: `
-    <q-item clickable @click="navigateTo">
-      <q-item-section v-if="icon" avatar>
-        <q-icon :name="icon" />
-      </q-item-section>
-      <q-item-section>
-        <q-item-label>{{ title }}</q-item-label>
-        <q-item-label caption>{{ caption }}</q-item-label>
-      </q-item-section>
-    </q-item>
-  `
-})
+import { defineComponent, ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
 export default defineComponent({
   name: 'AdminLayout',
-  components: { EssentialLink },
+  
   setup() {
-    const leftDrawerOpen = ref(false)
     const router = useRouter()
-    const userStore = useUserStore()
+    const route = useRoute()
+    const leftDrawerOpen = ref(false)
     
-    const essentialLinks = linksList
+    const currentYear = computed(() => new Date().getFullYear())
     
-    const logout = () => {
-      userStore.logout()
-      router.push({ name: 'login' })
+    const navigateTo = (path) => {
+      router.push(path)
+    }
+    
+    const isCurrentRoute = (routeName) => {
+      return route.name === routeName
     }
     
     return {
       leftDrawerOpen,
-      essentialLinks,
-      logout
+      currentYear,
+      navigateTo,
+      isCurrentRoute
     }
   }
 })
-</script> 
+</script>
+
+<style scoped>
+.q-drawer .q-router-link--exact-active {
+  color: white !important;
+}
+</style> 

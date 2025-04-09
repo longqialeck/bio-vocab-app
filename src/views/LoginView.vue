@@ -6,9 +6,9 @@
     <q-form @submit="onSubmit" class="q-gutter-md full-width">
       <q-input
         filled
-        v-model="username"
-        label="Username or Email"
-        :rules="[val => !!val || 'Username is required']"
+        v-model="email"
+        label="Email"
+        :rules="[val => !!val || 'Email is required']"
       />
       
       <q-input
@@ -60,10 +60,10 @@
         <q-card-section>
           <q-form @submit="adminLogin" class="q-gutter-md">
             <q-input
-              v-model="adminUsername"
-              label="管理员用户名"
+              v-model="adminEmail"
+              label="管理员邮箱"
               filled
-              :rules="[val => !!val || '请输入用户名']"
+              :rules="[val => !!val || '请输入邮箱']"
             />
             
             <q-input
@@ -91,6 +91,7 @@ import { useUserStore } from '../stores/userStore'
 import DnaLogo from '../components/DnaLogo.vue'
 import wechatService from '../services/wechatService'
 import { useQuasar } from 'quasar'
+import api from '../services/api'
 
 export default defineComponent({
   name: 'LoginView',
@@ -102,33 +103,45 @@ export default defineComponent({
     const userStore = useUserStore()
     const $q = useQuasar()
     
-    const username = ref('')
+    const email = ref('')
     const password = ref('')
     const rememberMe = ref(false)
     const loading = ref(false)
     
     // 管理员登录相关
     const adminLoginDialog = ref(false)
-    const adminUsername = ref('')
+    const adminEmail = ref('')
     const adminPassword = ref('')
     const adminLoading = ref(false)
     
     const onSubmit = async () => {
       loading.value = true
       
-      // In a real app, this would authenticate against a backend
-      // For the prototype, we'll simulate login
-      setTimeout(() => {
-        userStore.setUser({
-          id: 'user_' + Math.floor(Math.random() * 1000000),
-          name: 'Emily',
-          email: username.value,
-          gradeLevel: '10'
-        })
+      try {
+        console.log('尝试登录:', { email: email.value, password: password.value })
+        // 使用API进行登录
+        const response = await api.post('/auth/login', {
+          email: email.value,
+          password: password.value
+        });
         
-        loading.value = false
-        router.push({ name: 'dashboard' })
-      }, 1000)
+        if (response.data && response.data.token) {
+          console.log('登录成功:', response.data)
+          // 存储token和用户信息
+          localStorage.setItem('token', response.data.token);
+          userStore.setUser(response.data.user);
+          router.push({ name: 'dashboard' });
+        }
+      } catch (error) {
+        console.error('登录失败:', error);
+        $q.notify({
+          color: 'negative',
+          message: '用户名或密码错误',
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
+      }
     }
     
     const thirdPartyLogin = async (provider) => {
@@ -143,7 +156,7 @@ export default defineComponent({
           router.push({ name: 'dashboard' })
         }
       } else {
-        // Simulate third-party login
+        // 目前仍使用模拟登录，第三方登录需要实际集成
         setTimeout(() => {
           userStore.setUser({
             id: `${provider}_${Math.floor(Math.random() * 1000000)}`,
@@ -164,38 +177,54 @@ export default defineComponent({
     }
     
     // 管理员登录
-    const adminLogin = () => {
+    const adminLogin = async () => {
       adminLoading.value = true
       
-      setTimeout(() => {
-        // 获取保存的管理员密码，如果没有则使用默认密码'admin'
-        const savedAdminPassword = localStorage.getItem('adminPassword') || 'admin'
+      try {
+        console.log('尝试管理员登录:', { email: adminEmail.value, password: adminPassword.value })
+        // 使用API进行管理员登录
+        const response = await api.post('/auth/login', {
+          email: adminEmail.value,
+          password: adminPassword.value
+        });
         
-        if (adminUsername.value === 'admin' && adminPassword.value === savedAdminPassword) {
-          userStore.loginAsAdmin()
-          adminLoading.value = false
-          adminLoginDialog.value = false
-          router.push({ name: 'admin-dashboard' })
-        } else {
-          adminLoading.value = false
-          $q.notify({
-            color: 'negative',
-            message: '管理员用户名或密码错误',
-            icon: 'error'
-          })
+        if (response.data && response.data.token) {
+          console.log('管理员登录成功:', response.data)
+          // 检查是否为管理员
+          if (response.data.user.isAdmin) {
+            localStorage.setItem('token', response.data.token);
+            userStore.setUser(response.data.user);
+            adminLoginDialog.value = false;
+            router.push({ name: 'admin-dashboard' });
+          } else {
+            $q.notify({
+              color: 'negative',
+              message: '非管理员账户',
+              icon: 'error'
+            });
+          }
         }
-      }, 1000)
+      } catch (error) {
+        console.error('管理员登录失败:', error);
+        $q.notify({
+          color: 'negative',
+          message: '管理员用户名或密码错误',
+          icon: 'error'
+        });
+      } finally {
+        adminLoading.value = false;
+      }
     }
     
     return {
-      username,
+      email,
       password,
       rememberMe,
       loading,
       onSubmit,
       thirdPartyLogin,
       adminLoginDialog,
-      adminUsername,
+      adminEmail,
       adminPassword,
       adminLoading,
       showAdminLoginDialog,
