@@ -95,6 +95,28 @@
         </q-card>
       </div>
       
+      <!-- 管理员设置卡片 -->
+      <div class="col-12 col-md-4">
+        <q-card class="dashboard-card">
+          <q-card-section>
+            <div class="text-h6">管理员设置</div>
+            <div class="text-subtitle2 text-grey">修改管理员密码</div>
+          </q-card-section>
+          
+          <q-separator />
+          
+          <q-card-section>
+            <q-btn 
+              color="primary" 
+              icon="key" 
+              label="修改管理员密码" 
+              class="full-width q-mb-md"
+              @click="showChangePasswordDialog"
+            />
+          </q-card-section>
+        </q-card>
+      </div>
+      
       <!-- 学习统计卡片 -->
       <div class="col-12 col-md-4">
         <q-card class="dashboard-card">
@@ -172,6 +194,52 @@
         </q-card>
       </div>
     </div>
+
+    <!-- 修改管理员密码对话框 -->
+    <q-dialog v-model="passwordDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center">
+          <div class="text-h6">修改管理员密码</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="changeAdminPassword" class="q-gutter-md">
+            <q-input
+              v-model="currentPassword"
+              type="password"
+              label="当前密码"
+              filled
+              :rules="[val => !!val || '请输入当前密码']"
+            />
+            
+            <q-input
+              v-model="newPassword"
+              type="password"
+              label="新密码"
+              filled
+              :rules="[val => !!val || '请输入新密码']"
+            />
+            
+            <q-input
+              v-model="confirmPassword"
+              type="password"
+              label="确认新密码"
+              filled
+              :rules="[
+                val => !!val || '请确认新密码',
+                val => val === newPassword || '两次输入的密码不一致'
+              ]"
+            />
+            
+            <div class="q-mt-md">
+              <q-btn type="submit" color="primary" label="确认修改" class="full-width" :loading="passwordLoading" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -179,12 +247,21 @@
 import { defineComponent, ref, onMounted } from 'vue'
 import { useUserStore } from '../../stores/userStore'
 import { useVocabStore } from '../../stores/vocabStore'
+import { useQuasar } from 'quasar'
 
 export default defineComponent({
   name: 'AdminDashboard',
   setup() {
     const userStore = useUserStore()
     const vocabStore = useVocabStore()
+    const $q = useQuasar()
+    
+    // 管理员密码修改相关
+    const passwordDialog = ref(false)
+    const currentPassword = ref('')
+    const newPassword = ref('')
+    const confirmPassword = ref('')
+    const passwordLoading = ref(false)
     
     // 统计数据
     const stats = ref({
@@ -309,6 +386,44 @@ export default defineComponent({
       ]
     }
     
+    // 修改管理员密码
+    const showChangePasswordDialog = () => {
+      passwordDialog.value = true
+      currentPassword.value = ''
+      newPassword.value = ''
+      confirmPassword.value = ''
+    }
+    
+    const changeAdminPassword = () => {
+      passwordLoading.value = true
+      
+      // 验证当前密码是否正确(默认为admin)
+      setTimeout(() => {
+        if (currentPassword.value === 'admin') {
+          // 在真实应用中，这里会调用API更新管理员密码
+          // 为了演示，我们只保存在localStorage中
+          localStorage.setItem('adminPassword', newPassword.value)
+          
+          passwordLoading.value = false
+          passwordDialog.value = false
+          
+          $q.notify({
+            color: 'positive',
+            message: '管理员密码已更新',
+            icon: 'check_circle'
+          })
+        } else {
+          passwordLoading.value = false
+          
+          $q.notify({
+            color: 'negative',
+            message: '当前密码不正确',
+            icon: 'error'
+          })
+        }
+      }, 1000)
+    }
+    
     onMounted(() => {
       loadDashboardData()
     })
@@ -317,7 +432,14 @@ export default defineComponent({
       stats,
       recentActions,
       actionColumns,
-      getActionBadgeColor
+      getActionBadgeColor,
+      passwordDialog,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+      passwordLoading,
+      showChangePasswordDialog,
+      changeAdminPassword
     }
   }
 })

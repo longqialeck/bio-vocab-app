@@ -47,8 +47,42 @@
     </div>
     
     <div class="q-mt-xl">
-      <q-btn flat color="grey" label="管理员登录" size="sm" @click="loginAsAdmin" />
+      <q-btn flat color="grey" label="管理员登录" size="sm" @click="showAdminLoginDialog" />
     </div>
+    
+    <!-- 管理员登录对话框 -->
+    <q-dialog v-model="adminLoginDialog" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section class="row items-center">
+          <div class="text-h6">管理员登录</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="adminLogin" class="q-gutter-md">
+            <q-input
+              v-model="adminUsername"
+              label="管理员用户名"
+              filled
+              :rules="[val => !!val || '请输入用户名']"
+            />
+            
+            <q-input
+              v-model="adminPassword"
+              type="password"
+              label="管理员密码"
+              filled
+              :rules="[val => !!val || '请输入密码']"
+            />
+            
+            <div class="q-mt-md">
+              <q-btn type="submit" color="primary" label="登录" class="full-width" :loading="adminLoading" />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -58,6 +92,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import DnaLogo from '../components/DnaLogo.vue'
 import wechatService from '../services/wechatService'
+import { useQuasar } from 'quasar'
 
 export default defineComponent({
   name: 'LoginView',
@@ -67,11 +102,18 @@ export default defineComponent({
   setup() {
     const router = useRouter()
     const userStore = useUserStore()
+    const $q = useQuasar()
     
     const username = ref('')
     const password = ref('')
     const rememberMe = ref(false)
     const loading = ref(false)
+    
+    // 管理员登录相关
+    const adminLoginDialog = ref(false)
+    const adminUsername = ref('')
+    const adminPassword = ref('')
+    const adminLoading = ref(false)
     
     const onSubmit = async () => {
       loading.value = true
@@ -122,14 +164,32 @@ export default defineComponent({
       }
     }
     
+    // 显示管理员登录对话框
+    const showAdminLoginDialog = () => {
+      adminLoginDialog.value = true
+    }
+    
     // 管理员登录
-    const loginAsAdmin = () => {
-      loading.value = true
+    const adminLogin = () => {
+      adminLoading.value = true
       
       setTimeout(() => {
-        userStore.loginAsAdmin()
-        loading.value = false
-        router.push({ name: 'admin-dashboard' })
+        // 获取保存的管理员密码，如果没有则使用默认密码'admin'
+        const savedAdminPassword = localStorage.getItem('adminPassword') || 'admin'
+        
+        if (adminUsername.value === 'admin' && adminPassword.value === savedAdminPassword) {
+          userStore.loginAsAdmin()
+          adminLoading.value = false
+          adminLoginDialog.value = false
+          router.push({ name: 'admin-dashboard' })
+        } else {
+          adminLoading.value = false
+          $q.notify({
+            color: 'negative',
+            message: '管理员用户名或密码错误',
+            icon: 'error'
+          })
+        }
       }, 1000)
     }
     
@@ -141,7 +201,12 @@ export default defineComponent({
       onSubmit,
       goToRegister,
       thirdPartyLogin,
-      loginAsAdmin
+      adminLoginDialog,
+      adminUsername,
+      adminPassword,
+      adminLoading,
+      showAdminLoginDialog,
+      adminLogin
     }
   }
 })
