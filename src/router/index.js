@@ -12,11 +12,6 @@ const routes = [
     component: () => import('../views/LoginView.vue')
   },
   {
-    path: '/register',
-    name: 'register',
-    component: () => import('../views/RegisterView.vue')
-  },
-  {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('../views/DashboardView.vue'),
@@ -95,7 +90,7 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if (isAuthenticated && (to.name === 'login' || to.name === 'register' || to.name === 'splash')) {
+    if (isAuthenticated && (to.name === 'login' || to.name === 'splash')) {
       next({ name: 'dashboard' })
     } else {
       next()

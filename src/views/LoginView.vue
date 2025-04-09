@@ -33,8 +33,6 @@
       />
     </q-form>
     
-    <p class="q-mt-lg">Don't have an account? <q-btn flat dense color="primary" label="Sign Up" @click="goToRegister" /></p>
-    
     <div class="q-mt-lg">
       <div class="row justify-center q-mb-sm">
         <div class="text-subtitle2 text-grey">Or login with</div>
@@ -133,10 +131,6 @@ export default defineComponent({
       }, 1000)
     }
     
-    const goToRegister = () => {
-      router.push({ name: 'register' })
-    }
-    
     const thirdPartyLogin = async (provider) => {
       loading.value = true
       
@@ -199,7 +193,6 @@ export default defineComponent({
       rememberMe,
       loading,
       onSubmit,
-      goToRegister,
       thirdPartyLogin,
       adminLoginDialog,
       adminUsername,
