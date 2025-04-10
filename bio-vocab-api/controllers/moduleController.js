@@ -53,20 +53,35 @@ const getModules = async (req, res) => {
   try {
     const filter = {};
     
+    console.log('[调试] 获取模块列表请求参数:', req.query);
+    
     // Apply filters if provided
     if (req.query.gradeLevel) {
       filter.gradeLevel = req.query.gradeLevel;
+      console.log('[调试] 应用年级过滤:', req.query.gradeLevel);
     }
     
-    if (req.query.active === 'true') {
-      filter.isActive = true;
-    } else if (req.query.active === 'false') {
-      filter.isActive = false;
-    }
+    // 修改：默认返回所有模块，忽略active参数
+    // if (req.query.active === 'true') {
+    //   filter.isActive = true;
+    // } else if (req.query.active === 'false') {
+    //   filter.isActive = false;
+    // }
+    
+    console.log('[调试] 最终查询过滤条件:', filter);
 
     const modules = await Module.find(filter)
       .sort({ name: 1 })
       .select('-__v');
+    
+    console.log(`[调试] 查询返回了 ${modules.length} 个模块`);
+    if (modules.length > 0) {
+      console.log(`[调试] 第一个模块:`, {
+        id: modules[0]._id,
+        name: modules[0].name,
+        isActive: modules[0].isActive
+      });
+    }
     
     res.status(200).json(modules);
   } catch (error) {
@@ -211,7 +226,7 @@ const getVocabularyByModule = async (req, res) => {
 };
 
 // Import terms from CSV
-exports.importTerms = async (req, res) => {
+const importTerms = async (req, res) => {
   try {
     // Check if module exists
     const moduleId = req.params.id;
@@ -308,7 +323,7 @@ exports.importTerms = async (req, res) => {
 };
 
 // Get all terms for a module
-exports.getModuleTerms = async (req, res) => {
+const getModuleTerms = async (req, res) => {
   try {
     const { search, sort, page = 1, limit = 20 } = req.query;
     const skip = (page - 1) * limit;
@@ -361,7 +376,7 @@ exports.getModuleTerms = async (req, res) => {
 };
 
 // Get module statistics
-exports.getModuleStats = async (req, res) => {
+const getModuleStats = async (req, res) => {
   try {
     const moduleId = req.params.id;
     

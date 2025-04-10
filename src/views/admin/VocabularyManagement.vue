@@ -549,52 +549,46 @@ export default defineComponent({
     // 保存模块
     const saveModule = async () => {
       try {
-        // 验证表单
-        const isValid = await new Promise(resolve => {
-          // 在实际项目中应该使用表单验证
-          resolve(true)
-        })
-        
-        if (!isValid) return
-        
-        const module = moduleDialog.value.module
-        
-        // 设置最后更新时间
-        module.lastUpdated = new Date().toISOString().split('T')[0]
-        
-        // 调用store方法保存模块
-        const savedModule = vocabStore.addOrUpdateModule(module)
-        
-        // 关闭对话框
-        moduleDialog.value.show = false
-        
-        // 提示成功
+        loading.value = true;
+        await vocabStore.addOrUpdateModule(moduleDialog.value.module);
+        moduleDialog.value.show = false;
         $q.notify({
           color: 'positive',
           message: moduleDialog.value.isEdit ? '模块已更新' : '模块已添加',
           icon: 'check_circle'
-        })
-        
-        if (!moduleDialog.value.isEdit) {
-          // 如果是新添加的模块，自动跳转到词汇管理页面
-          viewModuleTerms(savedModule)
-        }
+        });
       } catch (error) {
-        console.error('保存模块失败:', error)
         $q.notify({
           color: 'negative',
-          message: '保存模块失败',
-          icon: 'warning'
-        })
+          message: `操作失败: ${error.message}`,
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
       }
     }
     
     // 确认删除模块
-    const confirmDeleteModule = (module) => {
-      deleteDialog.value = {
-        show: true,
-        type: 'module',
-        item: module
+    const confirmDeleteModule = async () => {
+      try {
+        loading.value = true;
+        await vocabStore.deleteModule(deleteDialog.value.item.id);
+        deleteDialog.value.show = false;
+        $q.notify({
+          color: 'positive',
+          message: '模块已删除',
+          icon: 'check_circle'
+        });
+        // 刷新模块列表
+        await loadModules();
+      } catch (error) {
+        $q.notify({
+          color: 'negative',
+          message: `删除失败: ${error.message}`,
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
       }
     }
     
@@ -630,69 +624,60 @@ export default defineComponent({
     // 保存词汇
     const saveTerm = async () => {
       try {
-        // 验证表单
-        const isValid = await new Promise(resolve => {
-          // 在实际项目中应该使用表单验证
-          resolve(true)
-        })
+        loading.value = true;
         
-        if (!isValid) return
-        
-        const term = termDialog.value.term
-        const moduleId = selectedModule.value.id
-        
-        // 为新词汇生成ID
-        if (!termDialog.value.isEdit) {
-          const maxId = moduleTerms.value.length > 0 
-            ? Math.max(...moduleTerms.value.map(t => t.id))
-            : 0
-          term.id = maxId + 1
-          
-          // 添加到当前模块
-          moduleTerms.value.push(term)
-          
-          // 更新模块信息
-          selectedModule.value.totalTerms = moduleTerms.value.length
-          selectedModule.value.lastUpdated = new Date().toISOString().split('T')[0]
-          
-          // 更新模块列表中的信息
-          const index = modules.value.findIndex(m => m.id === moduleId)
-          if (index >= 0) {
-            modules.value[index] = { ...selectedModule.value }
-          }
-        } else {
-          // 更新现有词汇
-          const index = moduleTerms.value.findIndex(t => t.id === term.id)
-          if (index >= 0) {
-            moduleTerms.value[index] = term
-          }
+        // 确保模块ID有值
+        if (!selectedModule.value?._id) {
+          throw new Error('请先选择一个模块');
         }
         
-        // 关闭对话框
-        termDialog.value.show = false
-        
-        // 提示成功
+        await vocabStore.saveTerm(selectedModule.value._id, termDialog.value.term);
+        termDialog.value.show = false;
         $q.notify({
           color: 'positive',
           message: termDialog.value.isEdit ? '词汇已更新' : '词汇已添加',
           icon: 'check_circle'
-        })
+        });
       } catch (error) {
-        console.error('保存词汇失败:', error)
         $q.notify({
           color: 'negative',
-          message: '保存词汇失败',
-          icon: 'warning'
-        })
+          message: `操作失败: ${error.message}`,
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
       }
     }
     
     // 确认删除词汇
-    const confirmDeleteTerm = (term) => {
-      deleteDialog.value = {
-        show: true,
-        type: 'term',
-        item: term
+    const confirmDeleteTerm = async () => {
+      try {
+        loading.value = true;
+        
+        // 确保有模块ID和词汇ID
+        if (!selectedModule.value?.id || !deleteDialog.value.item.id) {
+          throw new Error('删除失败：缺少必要信息');
+        }
+        
+        await vocabStore.deleteTerm(
+          deleteDialog.value.item.id, 
+          selectedModule.value.id
+        );
+        
+        deleteDialog.value.show = false;
+        $q.notify({
+          color: 'positive',
+          message: '词汇已删除',
+          icon: 'check_circle'
+        });
+      } catch (error) {
+        $q.notify({
+          color: 'negative',
+          message: `删除失败: ${error.message}`,
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
       }
     }
     
@@ -785,54 +770,90 @@ export default defineComponent({
     // 导入词汇
     const importVocabulary = async () => {
       try {
+        loading.value = true;
+        
+        if (!importDialog.value.file) {
+          throw new Error('请选择要导入的文件');
+        }
+        
         if (!importDialog.value.moduleId) {
-          $q.notify({
-            color: 'negative',
-            message: '请选择目标模块',
-            icon: 'warning'
-          })
-          return
+          throw new Error('请选择要导入到的模块');
         }
         
-        const moduleId = importDialog.value.moduleId
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append('file', importDialog.value.file);
+        formData.append('moduleId', importDialog.value.moduleId);
         
-        // 使用模拟数据，或者从importDialog.value.previewData获取完整数据
-        const mockData = importService.generateMockData()
+        // 调用API导入词汇
+        await vocabStore.importVocabulary(importDialog.value.moduleId, importDialog.value.preview);
         
-        // 调用store方法导入词汇
-        await vocabStore.importVocabulary(moduleId, mockData)
-        
-        // 更新模块信息
-        const moduleIndex = modules.value.findIndex(m => m.id === moduleId)
-        if (moduleIndex >= 0) {
-          // 更新所选模块的词汇数量
-          modules.value[moduleIndex].totalTerms += mockData.length
-          modules.value[moduleIndex].lastUpdated = new Date().toISOString().split('T')[0]
-          
-          // 如果当前正在查看该模块，刷新词汇列表
-          if (selectedModule.value?.id === moduleId) {
-            selectedModule.value = modules.value[moduleIndex]
-            await viewModuleTerms(selectedModule.value)
-          }
-        }
-        
-        // 关闭对话框
-        importDialog.value.show = false
-        
-        // 提示成功
+        importDialog.value.show = false;
         $q.notify({
           color: 'positive',
-          message: `成功导入 ${mockData.length} 个词汇`,
+          message: '词汇导入成功',
           icon: 'check_circle'
-        })
+        });
+        
+        // 如果当前选中的模块就是导入的模块，刷新词汇列表
+        if (selectedModule.value && selectedModule.value.id === importDialog.value.moduleId) {
+          await vocabStore.loadModule(selectedModule.value.id);
+        }
       } catch (error) {
-        console.error('导入词汇失败:', error)
         $q.notify({
           color: 'negative',
-          message: '导入词汇失败',
-          icon: 'warning'
-        })
+          message: `导入失败: ${error.message}`,
+          icon: 'error'
+        });
+      } finally {
+        loading.value = false;
+        importDialog.value.file = null;
+        importDialog.value.moduleId = null;
+        importDialog.value.preview = [];
       }
+    }
+    
+    const handleFileUpload = (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      importDialog.value.file = file;
+      
+      // 可选：预览CSV文件内容
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          // 简单解析CSV，在实际应用中可能需要更复杂的解析
+          const csv = e.target.result;
+          const lines = csv.split('\n');
+          const headers = lines[0].split(',');
+          
+          const previewData = [];
+          for (let i = 1; i < Math.min(lines.length, 6); i++) {
+            if (!lines[i].trim()) continue;
+            
+            const values = lines[i].split(',');
+            const row = {};
+            
+            headers.forEach((header, index) => {
+              row[header.trim()] = values[index] ? values[index].trim() : '';
+            });
+            
+            previewData.push(row);
+          }
+          
+          importDialog.value.preview = previewData;
+        } catch (error) {
+          console.error('解析CSV文件失败:', error);
+          $q.notify({
+            color: 'negative',
+            message: '解析文件失败，请检查文件格式',
+            icon: 'error'
+          });
+        }
+      };
+      
+      reader.readAsText(file);
     }
     
     onMounted(() => {
@@ -866,7 +887,8 @@ export default defineComponent({
       deleteItem,
       openImportDialog,
       onFileSelected,
-      importVocabulary
+      importVocabulary,
+      handleFileUpload
     }
   }
 })

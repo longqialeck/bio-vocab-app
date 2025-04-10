@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
-const Module = require('../models/moduleModel');
+const Module = require('../models/Module');
 const Term = require('../models/Term');
 
 // 加载环境变量
@@ -42,6 +42,7 @@ const users = [
 const modules = [
   {
     name: 'Cell Structure',
+    title: 'Cell Structure',
     description: '基础细胞结构相关词汇',
     gradeLevel: '10',
     category: '分子生物学',
@@ -50,6 +51,7 @@ const modules = [
   },
   {
     name: 'DNA & Genetics',
+    title: 'DNA & Genetics',
     description: 'DNA和遗传学相关词汇',
     gradeLevel: '11',
     category: '遗传学',
@@ -58,6 +60,7 @@ const modules = [
   },
   {
     name: 'Plant Biology',
+    title: 'Plant Biology',
     description: '植物生物学相关词汇',
     gradeLevel: '9',
     category: '植物学',

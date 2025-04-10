@@ -7,6 +7,10 @@ const moduleSchema = new Schema({
     required: true,
     trim: true
   },
+  title: {
+    type: String,
+    trim: true
+  },
   description: {
     type: String,
     trim: true
@@ -14,7 +18,7 @@ const moduleSchema = new Schema({
   gradeLevel: {
     type: String,
     required: true,
-    enum: ['7', '8', '9', '10', '11', '12', 'college']
+    enum: ['7', '8', '9', '10', '11', '12', 'college', '初一', '初二', '初三', '高一', '高二', '高三', '大学', '其他']
   },
   difficulty: {
     type: Number,
@@ -24,7 +28,6 @@ const moduleSchema = new Schema({
   },
   category: {
     type: String,
-    required: true,
     enum: ['植物学', '动物学', '生态学', '分子生物学', '人体解剖学', '遗传学', '综合', '其他'],
     default: '综合'
   },
@@ -55,14 +58,21 @@ const moduleSchema = new Schema({
   }
 });
 
-// Pre-save middleware to update the updatedAt timestamp
+// Pre-save middleware to update the updatedAt timestamp and sync title/name fields
 moduleSchema.pre('save', function(next) {
+  if (this.isModified('name') && this.name) {
+    this.title = this.name;
+  } else if (this.isModified('title') && this.title) {
+    this.name = this.title;
+  }
+  
   this.updatedAt = Date.now();
   next();
 });
 
 // Create index for efficient queries
 moduleSchema.index({ name: 1 }, { unique: true });
+moduleSchema.index({ title: 1 });
 moduleSchema.index({ gradeLevel: 1 });
 moduleSchema.index({ difficulty: 1 });
 moduleSchema.index({ category: 1 });

@@ -58,6 +58,15 @@
             </div>
           </div>
         </div>
+        
+        <div class="row justify-center q-mt-md">
+          <q-btn
+            color="secondary"
+            icon="quiz"
+            label="综合测验"
+            @click="goToComprehensiveQuiz"
+          />
+        </div>
       </q-card-section>
     </q-card>
     
@@ -166,6 +175,10 @@ export default defineComponent({
       router.push({ name: 'user-profile' })
     }
     
+    const goToComprehensiveQuiz = () => {
+      router.push({ name: 'comprehensive-quiz' })
+    }
+    
     return {
       user,
       progress,
@@ -177,7 +190,8 @@ export default defineComponent({
       startModule,
       isAdmin,
       goToAdmin,
-      goToUserProfile
+      goToUserProfile,
+      goToComprehensiveQuiz
     }
   }
 })

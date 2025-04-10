@@ -8,15 +8,22 @@
     "dev": "nodemon server.js",
     "seed": "node seeds/seed.js"
   },
-  "keywords": ["biology", "vocabulary", "education", "api"],
+  "keywords": [
+    "biology",
+    "vocabulary",
+    "education",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
-    "csv-parser": "^3.0.0",
+    "csv-parser": "^3.2.0",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "fast-csv": "^5.0.2",
     "helmet": "^6.1.5",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.4",

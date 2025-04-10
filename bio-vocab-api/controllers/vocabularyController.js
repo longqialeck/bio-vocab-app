@@ -1,5 +1,5 @@
 const Vocabulary = require('../models/vocabularyModel');
-const Module = require('../models/moduleModel');
+const Module = require('../models/Module');
 const User = require('../models/User');
 const asyncHandler = require('express-async-handler');
 const multer = require('multer');

@@ -27,30 +27,70 @@ export const useUserStore = defineStore('user', {
     setUser(user) {
       this.user = user
       this.isAuthenticated = true
+      
+      // 确保用户数据正确保存到localStorage
+      console.log('保存用户数据:', user);
       localStorage.setItem('bioVocabUser', JSON.stringify(user))
+      
+      // 如果用户是管理员，记录额外的日志
+      if (user.isAdmin) {
+        console.log('管理员用户已登录:', user);
+      }
     },
     
     async loadUser() {
+      // 尝试从localStorage获取登录信息
       const token = localStorage.getItem('token')
-      const userData = localStorage.getItem('bioVocabUser')
+      const userDataStr = localStorage.getItem('bioVocabUser')
       
-      if (token && userData) {
-        this.user = JSON.parse(userData)
-        this.isAuthenticated = true
-        
-        // 验证token有效性
+      console.log('loadUser检查本地存储:', { 
+        hasToken: !!token, 
+        hasUserData: !!userDataStr 
+      })
+      
+      // 如果token和用户数据都存在
+      if (token && userDataStr) {
         try {
-          const response = await api.get('/auth/me')
-          this.user = response.data
-          localStorage.setItem('bioVocabUser', JSON.stringify(this.user))
-          await this.loadProgress()
-          return true
+          // 解析用户数据
+          const userData = JSON.parse(userDataStr)
+          
+          // 设置本地状态
+          this.user = userData
+          this.isAuthenticated = true
+          
+          console.log('从localStorage恢复用户状态:', { 
+            user: this.user, 
+            isAdmin: this.isAdmin 
+          })
+          
+          // 验证token有效性
+          try {
+            const response = await api.get('/auth/me')
+            
+            // 如果API验证成功，更新最新的用户信息
+            if (response.data) {
+              this.user = response.data
+              localStorage.setItem('bioVocabUser', JSON.stringify(this.user))
+              console.log('Token验证成功，更新用户信息:', this.user)
+              
+              // 加载用户进度数据
+              await this.loadProgress()
+            }
+            
+            return true
+          } catch (error) {
+            console.error('Token验证失败:', error)
+            this.logout()
+            return false
+          }
         } catch (error) {
-          console.error('Token验证失败:', error)
+          console.error('解析用户数据失败:', error)
           this.logout()
           return false
         }
       }
+      
+      console.log('无本地存储的用户信息')
       return false
     },
     
@@ -135,24 +175,42 @@ export const useUserStore = defineStore('user', {
     
     async updateProgress(moduleId, completedTermIds) {
       try {
+        if (!this.user || !this.user._id) {
+          console.error('用户未登录，无法更新进度');
+          return;
+        }
+        
+        console.log(`更新进度: 模块=${moduleId}, 完成词汇数=${Array.isArray(completedTermIds) ? completedTermIds.length : completedTermIds}`);
+        
+        // 确保completedTermIds是数组
+        let termIds = completedTermIds;
+        if (!Array.isArray(completedTermIds)) {
+          if (typeof completedTermIds === 'number') {
+            // 如果传入的是数字（例如正确答案数），创建相应数量的模拟ID
+            termIds = Array(completedTermIds).fill().map((_, i) => `term_${i+1}`);
+          } else {
+            termIds = [completedTermIds];
+          }
+        }
+        
         // 更新API中的进度
         const response = await api.put(`/progress/module/${moduleId}`, {
-          completedTermIds
-        })
+          completedTermIds: termIds
+        });
         
         if (response.data) {
           // 更新本地模块进度
-          const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId)
+          const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId);
           if (moduleIndex >= 0) {
-            this.learningModules[moduleIndex].progress = response.data.progress
+            this.learningModules[moduleIndex].progress = response.data.progress;
+            console.log(`本地模块进度已更新: ${response.data.progress}%`);
           }
           
-          // 更新总体进度
-          this.progress.wordsLearned = this.user.progress?.wordsLearned || 0
-          this.progress.totalWords = this.user.progress?.totalWords || 0
+          // 重新获取用户进度数据以更新总体进度
+          await this.loadProgress();
         }
       } catch (error) {
-        console.error('更新进度失败:', error)
+        console.error('更新进度失败:', error);
       }
     },
 

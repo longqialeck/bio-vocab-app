@@ -12,15 +12,31 @@ const generateToken = (id) => {
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('尝试登录:', { email, passwordLength: password?.length });
     
     // 查找用户
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
+      console.log('用户未找到:', email);
       return res.status(401).json({ message: '邮箱或密码错误' });
     }
     
+    console.log('找到用户:', { 
+      id: user._id, 
+      name: user.name, 
+      isAdmin: user.isAdmin,
+      hasPassword: !!user.password,
+      passwordLength: user.password?.length
+    });
+    
     // 检查账户是否被锁定
     if (user.isAccountLocked()) {
+      console.log('账户被锁定:', { 
+        isLocked: user.isLocked, 
+        failedAttempts: user.failedLoginAttempts, 
+        lockUntil: user.lockUntil 
+      });
+      
       let remainingTime = 0;
       
       if (user.lockUntil) {
@@ -39,13 +55,20 @@ exports.loginUser = async (req, res) => {
     }
     
     // 检查密码
+    console.log('验证密码...');
     const isMatch = await user.matchPassword(password);
+    console.log('密码验证结果:', isMatch);
+    
     if (!isMatch) {
       // 增加失败尝试次数
       await user.incrementLoginAttempts();
       
       // 获取剩余尝试次数
       const remainingAttempts = 5 - user.failedLoginAttempts;
+      console.log('密码不匹配，已增加失败尝试次数:', { 
+        failedAttempts: user.failedLoginAttempts, 
+        remainingAttempts 
+      });
       
       if (remainingAttempts <= 0) {
         return res.status(401).json({ 
@@ -65,6 +88,7 @@ exports.loginUser = async (req, res) => {
     user.lastLogin = Date.now();
     await user.save();
     
+    console.log('登录成功，返回用户信息和token');
     res.json({
       user: {
         _id: user._id,
@@ -77,7 +101,7 @@ exports.loginUser = async (req, res) => {
       token: generateToken(user._id)
     });
   } catch (error) {
-    console.error(error);
+    console.error('登录过程发生错误:', error);
     res.status(500).json({ message: '服务器错误' });
   }
 };

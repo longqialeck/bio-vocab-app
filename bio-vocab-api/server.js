@@ -24,12 +24,16 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// 静态文件
+app.use('/uploads', express.static('uploads'));
+
 // 路由
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/modules', require('./routes/modules'));
 app.use('/api/terms', require('./routes/terms'));
 app.use('/api/progress', require('./routes/progress'));
+app.use('/api/vocabulary', require('./routes/vocabularyRoutes'));
 
 // 主页
 app.get('/', (req, res) => {

@@ -55,7 +55,7 @@ const UserSchema = new mongoose.Schema({
 // 密码加密中间件
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   
   const salt = await bcrypt.genSalt(10);

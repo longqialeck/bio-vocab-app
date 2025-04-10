@@ -188,27 +188,59 @@ export default defineComponent({
           password: adminPassword.value
         });
         
-        if (response.data && response.data.token) {
-          console.log('管理员登录成功:', response.data)
-          // 检查是否为管理员
-          if (response.data.user.isAdmin) {
-            localStorage.setItem('token', response.data.token);
-            userStore.setUser(response.data.user);
-            adminLoginDialog.value = false;
-            router.push({ name: 'admin-dashboard' });
-          } else {
-            $q.notify({
-              color: 'negative',
-              message: '非管理员账户',
-              icon: 'error'
-            });
-          }
+        console.log('管理员登录API响应:', response);
+        
+        if (!response.data) {
+          throw new Error('API返回了空响应');
+        }
+        
+        if (!response.data.token) {
+          throw new Error('API响应中缺少token');
+        }
+        
+        if (!response.data.user) {
+          throw new Error('API响应中缺少用户信息');
+        }
+        
+        console.log('管理员登录成功:', response.data)
+        
+        // 检查是否为管理员
+        if (response.data.user.isAdmin) {
+          // 先存储token
+          localStorage.setItem('token', response.data.token);
+          
+          // 然后通过store设置用户信息
+          userStore.setUser(response.data.user);
+          
+          // 验证存储是否成功
+          console.log('用户信息已存储，检查localStorage:', {
+            token: localStorage.getItem('token'),
+            bioVocabUser: localStorage.getItem('bioVocabUser'),
+            user: userStore.user,
+            isAdmin: userStore.isAdmin
+          });
+          
+          // 关闭对话框
+          adminLoginDialog.value = false;
+          
+          // 导航前插入一个小延迟，确保状态已更新
+          console.log('准备导航到管理后台...');
+          setTimeout(() => {
+            // 首先导航到admin路由，然后由路由配置自动重定向到admin-dashboard
+            router.push({ name: 'admin' });
+          }, 1000); // 延长延时，确保足够时间处理状态更新
+        } else {
+          $q.notify({
+            color: 'negative',
+            message: '非管理员账户',
+            icon: 'error'
+          });
         }
       } catch (error) {
         console.error('管理员登录失败:', error);
         $q.notify({
           color: 'negative',
-          message: '管理员用户名或密码错误',
+          message: error.message || '管理员用户名或密码错误',
           icon: 'error'
         });
       } finally {
