@@ -106,31 +106,45 @@ export const useUserStore = defineStore('user', {
         // 从API获取学习进度
         const response = await api.get('/progress')
         if (response.data) {
+          // 获取用户信息
+          const userResponse = await api.get('/users/me');
+          const userData = userResponse.data;
+          
           // 更新用户总体学习进度
           this.progress = {
-            wordsLearned: this.user.progress?.wordsLearned || 0,
-            totalWords: this.user.progress?.totalWords || 0,
-            dailyGoal: 5, // 这可以从用户设置中获取
-            streak: 5 // 这需要单独的逻辑计算
+            wordsLearned: userData.progress?.wordsLearned || 0,
+            totalWords: userData.progress?.totalWords || 0,
+            dailyGoal: userData.progress?.dailyGoal || 5,
+            streak: userData.progress?.streak || 0,
+            quizCompletion: userData.progress?.quizCompletion || 0
           }
           
           // 获取模块列表和进度
           const modulesResponse = await api.get('/modules')
           if (modulesResponse.data) {
-            this.learningModules = modulesResponse.data.map(module => {
-              // 查找用户对应模块的进度
-              const moduleProgress = response.data.find(p => 
-                p.moduleId && p.moduleId._id === module._id
-              )
-              
-              return {
-                id: module._id,
-                title: module.title,
-                totalTerms: module.totalTerms || 0,
-                progress: moduleProgress ? moduleProgress.progress : 0,
-                icon: module.icon || 'o_science'
-              }
-            })
+            // 筛选有效模块
+            this.learningModules = modulesResponse.data
+              .filter(module => module && (module.id || module._id)) // 确保模块有ID
+              .map(module => {
+                // 获取模块ID，确保其存在
+                const moduleId = module.id || module._id;
+                
+                // 查找用户对应模块的进度
+                const moduleProgress = response.data.find(p => 
+                  p.moduleId && (p.moduleId._id === module._id || p.moduleId === moduleId)
+                );
+                
+                return {
+                  id: moduleId,
+                  title: module.title || module.name || '未命名模块',
+                  totalTerms: module.termCount || module.totalTerms || 0,
+                  progress: moduleProgress ? moduleProgress.progress : 0,
+                  icon: module.icon || 'o_science'
+                }
+              });
+            
+            console.log(`[UserStore] 加载了${this.learningModules.length}个模块:`, 
+              this.learningModules.map(m => ({id: m.id, title: m.title})));
           }
         }
       } catch (error) {
@@ -145,28 +159,29 @@ export const useUserStore = defineStore('user', {
         wordsLearned: 0,
         totalWords: 0,
         dailyGoal: 5,
-        streak: 0
+        streak: 0,
+        quizCompletion: 0
       }
       
       this.learningModules = [
         {
-          id: 'cell-structure',
-          title: 'Cell Structure',
-          totalTerms: 15,
+          id: 1,
+          title: 'Cell Biology',
+          totalTerms: 8,
           progress: 0,
           icon: 'o_science'
         },
         {
-          id: 'dna-genetics',
-          title: 'DNA & Genetics',
-          totalTerms: 27,
+          id: 2,
+          title: 'Organization of Organisms',
+          totalTerms: 5,
           progress: 0,
           icon: 'o_biotech'
         },
         {
-          id: 'plant-biology',
-          title: 'Plant Biology',
-          totalTerms: 20,
+          id: 3,
+          title: 'Movement into and out of Cells',
+          totalTerms: 3,
           progress: 0,
           icon: 'o_eco'
         }

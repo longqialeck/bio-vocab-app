@@ -1,139 +1,108 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const progressSchema = new Schema({
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+const Term = sequelize.define('Term', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
   },
-  status: {
-    type: String,
-    enum: ['new', 'learning', 'reviewing', 'mastered'],
-    default: 'new'
-  },
-  correctCount: {
-    type: Number,
-    default: 0
-  },
-  incorrectCount: {
-    type: Number,
-    default: 0
-  },
-  lastReviewed: {
-    type: Date
-  },
-  nextReviewDate: {
-    type: Date
-  }
-}, { _id: false });
-
-const termSchema = new Schema({
   english: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '请提供英文词汇' }
+    }
   },
   chinese: {
-    type: String,
-    required: true,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: { msg: '请提供中文词汇' }
+    }
   },
   pinyin: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   definition: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   notes: {
-    type: String,
-    trim: true
+    type: DataTypes.TEXT,
+    allowNull: true
   },
-  examples: [
-    {
-      sentence: {
-        type: String,
-        trim: true
-      },
-      translation: {
-        type: String,
-        trim: true
-      }
-    }
-  ],
+  examples: {
+    type: DataTypes.JSON,
+    defaultValue: []
+  },
   imageUrl: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   audioUrl: {
-    type: String,
-    trim: true
+    type: DataTypes.STRING,
+    allowNull: true
   },
   moduleId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Module',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Modules',
+      key: 'id'
+    }
   },
   difficultyLevel: {
-    type: Number,
-    min: 1,
-    max: 5,
-    default: 3
-  },
-  tags: [
-    {
-      type: String,
-      trim: true
+    type: DataTypes.INTEGER,
+    defaultValue: 3,
+    validate: {
+      min: { args: [1], msg: '难度最小为1' },
+      max: { args: [5], msg: '难度最大为5' }
     }
-  ],
-  learningProgress: [progressSchema],
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'User'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  tags: {
+    type: DataTypes.JSON,
+    defaultValue: []
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  createdById: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
   }
+}, {
+  timestamps: true,
+  indexes: [
+    { fields: ['moduleId'] },
+    { fields: ['english', 'moduleId'], unique: true },
+    { fields: ['chinese'] }
+  ]
 });
 
-// Pre-save middleware to update the updatedAt timestamp
-termSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-// Create index for efficient queries
-termSchema.index({ moduleId: 1 });
-termSchema.index({ english: 1, moduleId: 1 }, { unique: true });
-termSchema.index({ chinese: 1 });
-termSchema.index({ tags: 1 });
-
-// Instance method to update a user's learning progress
-termSchema.methods.updateProgress = async function(userId, status, isCorrect) {
-  const progressIndex = this.learningProgress.findIndex(
-    p => p.userId.toString() === userId.toString()
-  );
+// 实例方法：更新用户学习进度
+Term.prototype.updateProgress = async function(userId, status, isCorrect) {
+  const TermProgress = require('./TermProgress');
   
-  if (progressIndex === -1) {
-    // Create new progress record
-    this.learningProgress.push({
-      userId,
-      status,
+  // 查找或创建进度记录
+  const [progress, created] = await TermProgress.findOrCreate({
+    where: { 
+      termId: this.id,
+      userId: userId
+    },
+    defaults: {
+      status: status,
       correctCount: isCorrect ? 1 : 0,
       incorrectCount: isCorrect ? 0 : 1,
       lastReviewed: new Date(),
       nextReviewDate: calculateNextReviewDate(status, 0)
-    });
-  } else {
-    // Update existing progress
-    const progress = this.learningProgress[progressIndex];
+    }
+  });
+  
+  // 如果进度记录已存在，则更新
+  if (!created) {
     progress.status = status;
     progress.lastReviewed = new Date();
     
@@ -143,16 +112,76 @@ termSchema.methods.updateProgress = async function(userId, status, isCorrect) {
       progress.incorrectCount += 1;
     }
     
-    // Calculate spaced repetition for next review
     const totalAttempts = progress.correctCount + progress.incorrectCount;
     progress.nextReviewDate = calculateNextReviewDate(status, totalAttempts);
+    
+    await progress.save();
   }
   
-  await this.save();
   return this;
 };
 
-// Calculate next review date based on spaced repetition algorithm
+// 静态方法：获取待复习的词汇
+Term.getDueForReview = async function(userId) {
+  const TermProgress = require('./TermProgress');
+  const { Op } = require('sequelize');
+  
+  const now = new Date();
+  
+  const dueTerms = await Term.findAll({
+    include: [{
+      model: TermProgress,
+      where: {
+        userId: userId,
+        nextReviewDate: { [Op.lte]: now },
+        status: { [Op.ne]: 'mastered' }
+      },
+      required: true
+    }],
+    limit: 20,
+    order: [[TermProgress, 'nextReviewDate', 'ASC']]
+  });
+  
+  return dueTerms;
+};
+
+// 静态方法：获取用户学习统计
+Term.getUserStats = async function(userId) {
+  const TermProgress = require('./TermProgress');
+  const { Op } = require('sequelize');
+  
+  // 获取总词汇数
+  const totalTerms = await this.count();
+  
+  // 获取用户学习状态统计
+  const stats = await TermProgress.findAll({
+    where: { userId },
+    attributes: [
+      'status',
+      [sequelize.fn('COUNT', sequelize.col('status')), 'count']
+    ],
+    group: ['status']
+  });
+  
+  // 处理统计结果
+  const result = {
+    totalTerms,
+    mastered: 0,
+    reviewing: 0,
+    learning: 0,
+    new: 0,
+    notStarted: totalTerms
+  };
+  
+  stats.forEach(stat => {
+    result[stat.status] = parseInt(stat.getDataValue('count'), 10);
+    result.notStarted -= parseInt(stat.getDataValue('count'), 10);
+  });
+  
+  return result;
+};
+
+// 计算下次复习日期的辅助函数
 function calculateNextReviewDate(status, attempts) {
   const now = new Date();
   let daysToAdd = 0;
@@ -179,64 +208,5 @@ function calculateNextReviewDate(status, attempts) {
   nextDate.setDate(now.getDate() + daysToAdd);
   return nextDate;
 }
-
-// Static method to get terms due for review for a specific user
-termSchema.statics.getDueForReview = async function(userId) {
-  const now = new Date();
-  
-  return this.find({
-    learningProgress: {
-      $elemMatch: {
-        userId,
-        nextReviewDate: { $lte: now },
-        status: { $ne: 'mastered' }
-      }
-    }
-  }).limit(20).sort('learningProgress.nextReviewDate');
-};
-
-// Static method to get user's mastery statistics for all terms
-termSchema.statics.getUserStats = async function(userId) {
-  const totalTerms = await this.countDocuments();
-  
-  const stats = await this.aggregate([
-    {
-      $unwind: {
-        path: '$learningProgress',
-        preserveNullAndEmptyArrays: false
-      }
-    },
-    {
-      $match: {
-        'learningProgress.userId': mongoose.Types.ObjectId(userId)
-      }
-    },
-    {
-      $group: {
-        _id: '$learningProgress.status',
-        count: { $sum: 1 }
-      }
-    }
-  ]);
-  
-  // Convert the results into a more usable format
-  const result = {
-    totalTerms,
-    mastered: 0,
-    reviewing: 0,
-    learning: 0,
-    new: 0,
-    notStarted: totalTerms
-  };
-  
-  stats.forEach(stat => {
-    result[stat._id] = stat.count;
-    result.notStarted -= stat.count;
-  });
-  
-  return result;
-};
-
-const Term = mongoose.model('Term', termSchema);
 
 module.exports = Term; 

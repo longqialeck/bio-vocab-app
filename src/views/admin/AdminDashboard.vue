@@ -248,6 +248,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { useUserStore } from '../../stores/userStore'
 import { useVocabStore } from '../../stores/vocabStore'
 import { useQuasar } from 'quasar'
+import api from '../../services/api'
 
 export default defineComponent({
   name: 'AdminDashboard',
@@ -329,21 +330,49 @@ export default defineComponent({
     
     // 加载仪表盘数据
     const loadDashboardData = async () => {
-      // 在实际应用中，这里会从API获取统计数据
-      // 这里我们使用模拟数据
-      await userStore.loadAllUsers()
-      await vocabStore.loadAllModules()
-      
-      stats.value = {
-        totalUsers: 3,
-        activeToday: 2,
-        newThisWeek: 1,
-        totalModules: 3,
-        totalTerms: 62,
-        newTermsThisMonth: 15,
-        termsLearned: 475,
-        learnedToday: 36,
-        avgCompletionRate: 68
+      try {
+        // 从API获取统计数据
+        const response = await api.get('/users/dashboard/stats');
+        
+        // 更新统计数据
+        const data = response.data;
+        
+        stats.value = {
+          totalUsers: data.userStats.totalUsers,
+          activeToday: data.userStats.activeToday,
+          newThisWeek: data.userStats.newThisWeek,
+          totalModules: data.moduleStats.totalModules,
+          totalTerms: data.moduleStats.totalTerms,
+          newTermsThisMonth: data.moduleStats.newTermsThisMonth,
+          termsLearned: data.learningStats.termsLearned,
+          learnedToday: data.learningStats.learnedToday,
+          avgCompletionRate: data.learningStats.avgCompletionRate
+        };
+        
+        // 加载最近用户和模块数据
+        await userStore.loadAllUsers();
+        await vocabStore.loadAllModules();
+        
+      } catch (error) {
+        console.error('加载仪表盘数据出错:', error);
+        $q.notify({
+          color: 'negative',
+          message: '加载仪表盘数据失败',
+          icon: 'error'
+        });
+        
+        // 使用默认数据作为后备
+        stats.value = {
+          totalUsers: 3,
+          activeToday: 2,
+          newThisWeek: 1,
+          totalModules: 3,
+          totalTerms: 62,
+          newTermsThisMonth: 15,
+          termsLearned: 475,
+          learnedToday: 36,
+          avgCompletionRate: 68
+        };
       }
       
       // 模拟最近操作记录
@@ -383,8 +412,8 @@ export default defineComponent({
           action: '删除词汇',
           details: '从 "Cell Structure" 模块删除了1个词汇'
         }
-      ]
-    }
+      ];
+    };
     
     // 修改管理员密码
     const showChangePasswordDialog = () => {
@@ -424,9 +453,10 @@ export default defineComponent({
       }, 1000)
     }
     
+    // 页面加载时获取数据
     onMounted(() => {
-      loadDashboardData()
-    })
+      loadDashboardData();
+    });
     
     return {
       stats,

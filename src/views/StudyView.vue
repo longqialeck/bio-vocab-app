@@ -4,7 +4,7 @@
       <q-btn icon="arrow_back" flat round dense @click="goBack" />
       <div class="q-ml-md">
         <div class="text-h6">{{ moduleTitle }}</div>
-        <div class="row items-center">
+        <div class="row items-center" v-if="totalTerms > 0">
           <q-rating
             v-model="currentTermIndex"
             :max="totalTerms"
@@ -48,17 +48,40 @@
           </div>
         </div>
         
+        <div v-else-if="loading" class="text-center">
+          <q-spinner color="primary" size="3em" />
+          <div class="q-mt-sm">加载中...</div>
+        </div>
+        
+        <div v-else-if="loadError" class="text-center">
+          <q-icon name="error" color="negative" size="3em" />
+          <div class="q-mt-sm text-negative">{{ loadError }}</div>
+          <q-btn color="primary" label="返回模块列表" class="q-mt-md" @click="goBack" />
+        </div>
+        
+        <div v-else-if="terms.length === 0" class="text-center">
+          <q-icon name="info" color="warning" size="3em" />
+          <div class="q-mt-sm">该模块没有词汇</div>
+          <q-btn color="primary" label="返回模块列表" class="q-mt-md" @click="goBack" />
+        </div>
+        
+        <div v-else-if="!moduleId" class="text-center">
+          <q-icon name="error_outline" color="negative" size="3em" />
+          <div class="q-mt-sm">无效的模块ID</div>
+          <q-btn color="primary" label="返回模块列表" class="q-mt-md" @click="goBack" />
+        </div>
+        
         <div v-else class="text-center">
           <q-spinner color="primary" size="3em" />
-          <div class="q-mt-sm">Loading term...</div>
+          <div class="q-mt-sm">正在准备学习内容...</div>
         </div>
       </q-card-section>
     </q-card>
     
-    <div class="row justify-between">
+    <div class="row justify-between" v-if="currentTerm">
       <q-btn
         icon="navigate_before"
-        label="Previous Term"
+        label="上一词"
         color="grey-7"
         flat
         :disable="currentTermIndex <= 1"
@@ -67,15 +90,15 @@
       
       <q-btn
         icon-right="navigate_next"
-        label="Next Term"
+        label="下一词"
         color="primary"
         :disable="currentTermIndex >= totalTerms"
         @click="nextTerm"
       />
     </div>
     
-    <div class="row justify-center q-mt-lg" v-if="currentTermIndex >= totalTerms && showAnswer">
-      <q-btn color="primary" label="Take Quiz" @click="goToQuiz" />
+    <div class="row justify-center q-mt-lg" v-if="currentTermIndex >= totalTerms && showAnswer && currentTerm">
+      <q-btn color="primary" label="测验" @click="goToQuiz" />
     </div>
   </q-page>
 </template>
@@ -94,13 +117,51 @@ export default defineComponent({
     const vocabStore = useVocabStore()
     const userStore = useUserStore()
     
-    const moduleId = computed(() => route.params.moduleId)
-    const termId = computed(() => parseInt(route.params.termId) || 1)
+    const moduleId = computed(() => {
+      const paramId = route.params.moduleId;
+      const queryId = route.query.moduleId;
+      const pathMatch = window.location.hash.match(/\/study\/(\d+)\/\d+/);
+      const pathId = pathMatch ? pathMatch[1] : null;
+      
+      let id = paramId || queryId || pathId;
+      if (!id || id === 'undefined') {
+        console.error('[StudyView] 无效的模块ID:', id);
+        return null;
+      }
+      
+      // 尝试将模块ID转换为数字
+      const numericId = parseInt(id);
+      if (!isNaN(numericId)) {
+        id = numericId;
+      }
+      
+      console.log('[StudyView] 模块ID:', {
+        paramId, queryId, pathId, 最终ID: id,
+        类型: typeof id
+      });
+      
+      return id;
+    })
+    
+    const termId = computed(() => {
+      const paramTermId = route.params.termId;
+      const queryTermId = route.query.termId;
+      const pathMatch = window.location.hash.match(/\/study\/\d+\/(\d+)/);
+      const pathTermId = pathMatch ? pathMatch[1] : null;
+      
+      const rawId = paramTermId || queryTermId || pathTermId || '1';
+      const id = parseInt(rawId) || 1;
+      console.log('词汇ID获取:', { paramTermId, queryTermId, pathTermId, 最终ID: id });
+      
+      return id;
+    })
     
     const terms = ref([])
     const totalTerms = ref(0)
     const currentTermIndex = ref(1)
     const showAnswer = ref(false)
+    const loading = ref(false)
+    const loadError = ref('')
     
     const currentTerm = computed(() => {
       if (terms.value.length === 0) return null
@@ -118,10 +179,84 @@ export default defineComponent({
       currentTermIndex.value = termId.value
     })
     
+    watch(moduleId, (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        console.log(`[StudyView] moduleId changed: ${oldId} -> ${newId}`);
+        loadModuleTerms();
+      }
+    })
+    
+    watch(moduleId, (newId) => {
+      if (newId === null) {
+        console.warn('[StudyView] 检测到无效模块ID，将重定向到主页');
+        router.replace('/dashboard');
+      }
+    }, { immediate: true })
+    
     const loadModuleTerms = async () => {
-      const moduleTerms = await vocabStore.loadModule(moduleId.value)
-      terms.value = moduleTerms
-      totalTerms.value = moduleTerms.length
+      try {
+        loading.value = true;
+        loadError.value = '';
+        
+        const id = moduleId.value;
+        
+        if (!id) {
+          console.error('[StudyView] 模块ID无效:', id);
+          loadError.value = '无效的模块ID';
+          terms.value = [];
+          totalTerms.value = 0;
+          
+          // 如果ID无效则返回到dashboard
+          setTimeout(() => {
+            router.replace('/dashboard');
+          }, 1500);
+          
+          return;
+        }
+        
+        console.log(`[StudyView] 开始加载模块ID=${id}的词汇，(类型: ${typeof id})`);
+        
+        const moduleTerms = await vocabStore.loadModule(id);
+        
+        if (!moduleTerms || moduleTerms.length === 0) {
+          console.error(`[StudyView] 模块${id}没有找到词汇`);
+          terms.value = [];
+          totalTerms.value = 0;
+          return;
+        }
+        
+        console.log(`[StudyView] 成功加载模块${id}的${moduleTerms.length}个词汇`);
+        
+        const validTerms = moduleTerms.filter(term => term && term.term && term.foreignTerm);
+        
+        if (validTerms.length !== moduleTerms.length) {
+          console.warn(`[StudyView] 过滤后有效词汇数量: ${validTerms.length}，原数量: ${moduleTerms.length}`);
+        }
+        
+        if (validTerms.length === 0) {
+          console.error(`[StudyView] 模块${id}没有有效词汇`);
+          terms.value = [];
+          totalTerms.value = 0;
+          return;
+        }
+        
+        console.log('[StudyView] 第一个词汇:', validTerms[0]);
+        
+        terms.value = validTerms;
+        totalTerms.value = validTerms.length;
+        
+        if (currentTermIndex.value > totalTerms.value) {
+          currentTermIndex.value = 1;
+        }
+      } catch (error) {
+        console.error('[StudyView] 加载模块词汇出错:', error);
+        console.error('[StudyView] 错误详情:', error.response || error.message || error);
+        loadError.value = `加载词汇失败: ${error.message || '未知错误'}`;
+        terms.value = [];
+        totalTerms.value = 0;
+      } finally {
+        loading.value = false;
+      }
     }
     
     const toggleAnswer = () => {
@@ -145,11 +280,8 @@ export default defineComponent({
     }
     
     const rateKnowledge = (rating) => {
-      // In a real app, this would save the rating to track learning progress
-      // For the prototype, we'll just move to the next term
       nextTerm()
       
-      // Update progress in the store
       if (rating >= 3) {
         userStore.updateProgress(moduleId.value, 1)
       }
@@ -177,7 +309,9 @@ export default defineComponent({
       prevTerm,
       rateKnowledge,
       goToQuiz,
-      goBack
+      goBack,
+      loading,
+      loadError
     }
   }
 })

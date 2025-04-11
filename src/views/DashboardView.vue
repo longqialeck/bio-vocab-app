@@ -106,15 +106,28 @@
         :key="module.id" 
         class="col-6"
       >
-        <q-card
-          class="module-card"
-          :class="{'module-card-inactive': module.progress === 0}"
-          @click="startModule(module.id)"
-        >
+        <a v-if="module && module.id" :href="`/#/study/${module.id}/1`" class="no-decoration">
+          <q-card
+            class="module-card"
+            :class="{'module-card-inactive': module.progress === 0}"
+          >
+            <q-card-section class="text-center">
+              <q-icon :name="module.icon" size="40px" color="primary" />
+              <div class="text-subtitle1 q-mt-sm">{{ module.title }}</div>
+              <div class="text-caption">{{ module.totalTerms || 0 }} terms</div>
+              <q-btn 
+                color="primary" 
+                class="q-mt-sm"
+                size="sm" 
+                label="开始学习" 
+              />
+            </q-card-section>
+          </q-card>
+        </a>
+        <q-card v-else class="module-card module-card-inactive">
           <q-card-section class="text-center">
-            <q-icon :name="module.icon" size="40px" color="primary" />
-            <div class="text-subtitle1 q-mt-sm">{{ module.title }}</div>
-            <div class="text-caption">{{ module.totalTerms }} terms</div>
+            <q-icon name="warning" size="40px" color="grey" />
+            <div class="text-subtitle1 q-mt-sm">模块加载中...</div>
           </q-card-section>
         </q-card>
       </div>
@@ -160,11 +173,72 @@ export default defineComponent({
     })
     
     const continueModule = (moduleId) => {
-      router.push({ name: 'study', params: { moduleId, termId: 1 } })
+      if (!moduleId) {
+        console.error('无效的模块ID:', moduleId);
+        return;
+      }
+      
+      const id = String(moduleId);
+      console.log(`继续学习模块 ID: ${id}`);
+      
+      try {
+        // 使用router跳转
+        router.push({ 
+          name: 'study', 
+          params: { 
+            moduleId: id, 
+            termId: '1' 
+          }
+        });
+        
+        // 备用方法
+        setTimeout(() => {
+          if (window.location.hash.indexOf(`/study/${id}/`) === -1) {
+            console.log('继续学习路由跳转失败，使用备用方式');
+            window.location.href = `/#/study/${id}/1`;
+          }
+        }, 300);
+      } catch (error) {
+        console.error('继续学习路由跳转出错:', error);
+        window.location.href = `/#/study/${id}/1`;
+      }
     }
     
     const startModule = (moduleId) => {
-      router.push({ name: 'study', params: { moduleId, termId: 1 } })
+      // 增加验证和详细日志
+      if (!moduleId) {
+        console.error('无效的模块ID:', moduleId);
+        return;
+      }
+      
+      console.log(`开始学习模块 ID: ${moduleId} (类型: ${typeof moduleId})`);
+      
+      // 确保将模块ID转换为字符串
+      const id = String(moduleId);
+      console.log(`转换后的模块ID: ${id}`);
+      
+      try {
+        // 方式1: 使用router对象跳转
+        router.push({
+          name: 'study',
+          params: {
+            moduleId: id,
+            termId: '1'
+          }
+        });
+        
+        // 备用方案 - 直接修改location
+        setTimeout(() => {
+          if (window.location.hash.indexOf(`/study/${id}/`) === -1) {
+            console.log('路由跳转失败，使用备用方式');
+            window.location.href = `/#/study/${id}/1`;
+          }
+        }, 300);
+      } catch (error) {
+        console.error('路由跳转出错:', error);
+        // 出错时使用哈希模式URL格式
+        window.location.href = `/#/study/${id}/1`;
+      }
     }
     
     const goToAdmin = () => {
@@ -179,6 +253,53 @@ export default defineComponent({
       router.push({ name: 'comprehensive-quiz' })
     }
     
+    const onStartButtonClick = (moduleId, event) => {
+      // 检查事件参数
+      const eventTarget = event?.currentTarget;
+      console.log('点击事件目标:', eventTarget);
+      console.log('模块ID参数:', moduleId);
+      
+      // 如果moduleId为undefined，尝试从事件目标获取
+      if (moduleId === undefined) {
+        // 尝试从DOM元素上获取数据
+        const dataModuleId = eventTarget?.dataset?.moduleId;
+        if (dataModuleId) {
+          moduleId = dataModuleId;
+          console.log('从DOM元素获取到模块ID:', moduleId);
+        } else {
+          console.error('无法获取模块ID，所有尝试均失败');
+          return;
+        }
+      }
+      
+      console.log('明确点击按钮启动模块:', moduleId);
+      
+      // 确保模块ID有效
+      if (!moduleId) {
+        console.error('无效的模块ID');
+        return;
+      }
+      
+      // 直接使用明确的方式设置路由
+      const id = String(moduleId);
+      console.log('处理后的模块ID:', id);
+      
+      // 使用与哈希模式匹配的URL格式
+      try {
+        // 阻止默认行为和冒泡
+        if (event) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        
+        window.location.href = `/#/study/${id}/1`;
+      } catch (e) {
+        console.error('跳转失败:', e);
+        // 尝试备用方法
+        router.push({path: `/study/${id}/1`});
+      }
+    }
+    
     return {
       user,
       progress,
@@ -191,7 +312,8 @@ export default defineComponent({
       isAdmin,
       goToAdmin,
       goToUserProfile,
-      goToComprehensiveQuiz
+      goToComprehensiveQuiz,
+      onStartButtonClick
     }
   }
 })
@@ -222,5 +344,15 @@ export default defineComponent({
 
 .module-card-inactive {
   opacity: 0.7;
+}
+
+.no-decoration {
+  text-decoration: none;
+  color: inherit;
+}
+
+.no-decoration:hover {
+  text-decoration: none;
+  color: inherit;
 }
 </style> 

@@ -15,7 +15,7 @@
 
 - Node.js
 - Express
-- MongoDB (Mongoose)
+- MySQL/MariaDB (Sequelize ORM)
 - JWT认证
 - Bcrypt密码加密
 - Multer文件上传
@@ -37,14 +37,25 @@ npm install
 创建`.env`文件，并设置以下变量：
 ```
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/biovocab
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=biovocab
+DB_USER=root
+DB_PASSWORD=your_password
 JWT_SECRET=your_secret_key
 NODE_ENV=development
 ```
 
 4. 数据库初始化
 ```bash
-npm run seed
+# 创建数据库
+npm run db:create
+
+# 运行迁移
+npm run db:migrate
+
+# 填充初始数据
+npm run db:seed
 ```
 
 ## 启动

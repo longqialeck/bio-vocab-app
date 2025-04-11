@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import api from '../services/api'
 
 export const useVocabStore = defineStore('vocab', {
   state: () => ({
@@ -26,87 +27,118 @@ export const useVocabStore = defineStore('vocab', {
   actions: {
     async loadModule(moduleId) {
       try {
+        // 验证模块ID是否有效
+        if (!moduleId) {
+          console.error('[VocabStore] 无效的模块ID:', moduleId);
+          throw new Error('无效的模块ID');
+        }
+        
+        // 检查token
         const token = localStorage.getItem('token');
         if (!token) {
+          console.error('[VocabStore] 未找到token，用户可能未登录');
           throw new Error('未登录，请先登录');
         }
         
-        const response = await fetch(`http://localhost:5000/api/terms/module/${moduleId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        console.log(`[VocabStore] 开始加载模块ID=${moduleId}的词汇 (类型: ${typeof moduleId})`);
+        
+        // 确保模块ID是正确的格式
+        const id = typeof moduleId === 'number' ? moduleId : String(moduleId);
+        
+        // 使用正确的API路径
+        const url = `/modules/${id}/terms`;
+        console.log(`[VocabStore] 请求API: ${url}`);
+        
+        // 发送请求到API，添加额外的调试信息
+        console.log(`[VocabStore] 发送请求头: Authorization: Bearer ${token.substring(0, 15)}...`);
+        
+        // 添加请求超时和重试逻辑
+        let retries = 0;
+        const maxRetries = 2;
+        let response;
+        
+        while (retries <= maxRetries) {
+          try {
+            response = await api.get(url);
+            break; // 请求成功，跳出循环
+          } catch (err) {
+            retries++;
+            console.warn(`[VocabStore] API请求失败，重试 ${retries}/${maxRetries}:`, err.message);
+            
+            if (retries > maxRetries) {
+              throw err; // 超过最大重试次数，抛出错误
+            }
+            
+            // 等待一段时间后重试
+            await new Promise(resolve => setTimeout(resolve, 1000 * retries));
           }
+        }
+        
+        console.log(`[VocabStore] API响应状态: ${response.status}`);
+        console.log(`[VocabStore] API响应数据类型: ${typeof response.data}, 是否为数组: ${Array.isArray(response.data)}`);
+        
+        const terms = response.data;
+        
+        if (!terms) {
+          console.error(`[VocabStore] 模块${id}的API响应无效:`, response.data);
+          this.modules[id] = [];
+          this.currentModule = id;
+          return [];
+        }
+        
+        console.log(`[VocabStore] 接收到${terms.length}个词汇`);
+        
+        if (terms.length === 0) {
+          console.warn(`[VocabStore] 模块${id}没有词汇`);
+          this.modules[id] = [];
+          this.currentModule = id;
+          return [];
+        }
+        
+        // 打印第一个词汇示例，用于调试
+        if (terms.length > 0) {
+          console.log('[VocabStore] 第一个词汇示例:', terms[0]);
+        }
+        
+        // 映射字段名: 后端 -> 前端
+        // 添加额外的字段检查和错误处理
+        this.modules[id] = terms.map(term => {
+          // 检查词汇是否有效
+          if (!term) {
+            console.warn('[VocabStore] 发现无效词汇项: ', term);
+            return null;
+          }
+          
+          // 创建词汇对象，确保所有必要的字段都存在
+          return {
+            id: term.id || 0,
+            term: term.english || '(未知词汇)',
+            definition: term.definition || '',
+            foreignTerm: term.chinese || '(未知翻译)',
+            image: term.imageUrl || null,
+            notes: term.notes || null
+          };
+        }).filter(term => term !== null); // 过滤掉无效项
+        
+        console.log(`[VocabStore] 成功映射${this.modules[id].length}个词汇`);
+        if (this.modules[id].length > 0) {
+          console.log('[VocabStore] 映射后的第一个词汇:', this.modules[id][0]);
+        }
+        
+        this.currentModule = id;
+        return this.modules[id];
+      } catch (error) {
+        console.error(`[VocabStore] 加载模块${moduleId}时出错:`, error);
+        console.error(`[VocabStore] 错误详情:`, {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data
         });
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch terms for module ${moduleId}`);
-        }
-        
-        const data = await response.json();
-        
-        // 处理API返回的数据格式，可能是直接terms数组或带有pagination的对象
-        const terms = data.terms || data;
-        
-        // 字段名称映射: 后端 -> 前端
-        this.modules[moduleId] = terms.map(term => ({
-          id: term._id,
-          term: term.english,
-          definition: term.definition || '',
-          foreignTerm: term.chinese || '',
-          image: term.imageUrl || null,
-          notes: term.notes || null
-        }));
-        
+        // 返回空数组表示没有数据
+        this.modules[moduleId] = [];
         this.currentModule = moduleId;
-        return this.modules[moduleId];
-      } catch (error) {
-        console.error(`Error loading module ${moduleId}:`, error);
-        
-        // 回退到硬编码数据用于演示
-        if (moduleId === 'cell-structure') {
-          this.modules[moduleId] = [
-            {
-              id: 1,
-              term: 'Cell Membrane',
-              definition: 'Also called the plasma membrane, it is the thin layer of protein and fat that surrounds the cell.',
-              foreignTerm: '细胞膜',
-              image: null
-            },
-            {
-              id: 2,
-              term: 'Cytoplasm',
-              definition: 'The fluid inside the cell that holds the organelles in place.',
-              foreignTerm: '细胞质',
-              image: null
-            },
-            {
-              id: 3,
-              term: 'Nucleus',
-              definition: 'The cell\'s control center, containing the cell\'s DNA and directing cell activities.',
-              foreignTerm: '细胞核',
-              image: null
-            }
-          ];
-        } else if (moduleId === 'dna-genetics') {
-          this.modules[moduleId] = [
-            {
-              id: 1,
-              term: 'DNA',
-              definition: 'Deoxyribonucleic acid, the hereditary material in humans and almost all other organisms.',
-              foreignTerm: '脱氧核糖核酸',
-              image: null
-            },
-            {
-              id: 2,
-              term: 'Gene',
-              definition: 'The basic physical and functional unit of heredity.',
-              foreignTerm: '基因',
-              image: null
-            }
-          ];
-        }
-        
-        this.currentModule = moduleId;
-        return this.modules[moduleId] || [];
+        return [];
       }
     },
     
@@ -154,24 +186,11 @@ export const useVocabStore = defineStore('vocab', {
     // 管理员功能：加载所有模块
     async loadAllModules() {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('未登录，请先登录');
-        }
+        const response = await api.get('/modules');
+        const data = response.data;
         
-        const response = await fetch('http://localhost:5000/api/modules', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch modules');
-        }
-        
-        const data = await response.json();
         this.moduleList = data.map(module => ({
-          id: module._id,
+          id: module.id || module._id,
           title: module.title || module.name,
           description: module.description || '',
           totalTerms: module.termCount || 0,
@@ -189,39 +208,22 @@ export const useVocabStore = defineStore('vocab', {
     // 添加或更新模块
     async addOrUpdateModule(moduleData) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('未登录，请先登录');
-        }
-        
-        const method = moduleData.id ? 'PUT' : 'POST';
+        const method = moduleData.id ? 'put' : 'post';
         const url = moduleData.id 
-          ? `http://localhost:5000/api/modules/${moduleData.id}`
-          : 'http://localhost:5000/api/modules';
+          ? `/modules/${moduleData.id}`
+          : '/modules';
         
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            name: moduleData.title,
-            title: moduleData.title,
-            description: moduleData.description,
-            language: moduleData.language || 'English-Chinese'
-          })
+        const response = await api[method](url, {
+          name: moduleData.title,
+          title: moduleData.title,
+          description: moduleData.description,
+          language: moduleData.language || 'English-Chinese'
         });
-        
-        if (!response.ok) {
-          throw new Error(moduleData.id ? 'Failed to update module' : 'Failed to create module');
-        }
         
         // 刷新模块列表
         await this.loadAllModules();
         
-        const result = await response.json();
-        return result;
+        return response.data;
       } catch (error) {
         console.error('Error saving module:', error);
         throw error;
@@ -231,34 +233,14 @@ export const useVocabStore = defineStore('vocab', {
     // 删除模块
     async deleteModule(moduleId) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('未登录，请先登录');
-        }
-        
-        const response = await fetch(`http://localhost:5000/api/modules/${moduleId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to delete module');
-        }
+        await api.delete(`/modules/${moduleId}`);
         
         // 从状态中移除模块
         if (this.modules[moduleId]) {
           delete this.modules[moduleId];
         }
         
-        // 如果当前显示的是被删除的模块，清空当前模块
-        if (this.currentModule === moduleId) {
-          this.currentModule = null;
-        }
-        
-        // 刷新模块列表
-        await this.loadAllModules();
+        this.moduleList = this.moduleList.filter(module => module.id !== moduleId);
         
         return true;
       } catch (error) {
@@ -267,46 +249,15 @@ export const useVocabStore = defineStore('vocab', {
       }
     },
 
-    // 从Excel/CSV导入词汇
+    // 导入词汇
     async importVocabulary(moduleId, data) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('未登录，请先登录');
-        }
-        
-        // 将前端词汇数据字段映射到后端字段
-        const mappedData = data.map(item => ({
-          english: item.term, 
-          chinese: item.foreignTerm,
-          definition: item.definition || '',
-          notes: item.notes || '',
-          imageUrl: item.image || ''
-        }));
-        
-        const response = await fetch(`http://localhost:5000/api/terms/import`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ 
-            moduleId: moduleId,
-            terms: mappedData 
-          })
+        const response = await api.post(`/terms/import`, {
+          moduleId,
+          terms: data
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to import vocabulary');
-        }
-        
-        // 更新模块信息
-        await this.loadModule(moduleId);
-        
-        // 刷新模块列表以更新统计信息
-        await this.loadAllModules();
-        
-        return this.modules[moduleId];
+        return response.data;
       } catch (error) {
         console.error('Error importing vocabulary:', error);
         throw error;
@@ -338,69 +289,73 @@ export const useVocabStore = defineStore('vocab', {
       ]
     },
 
-    // 保存词汇条目
+    // 保存术语
     async saveTerm(moduleId, termData) {
       try {
-        const method = termData.id ? 'PUT' : 'POST';
+        const method = termData.id ? 'put' : 'post';
         const url = termData.id 
-          ? `http://localhost:5000/api/terms/${termData.id}`
-          : 'http://localhost:5000/api/terms';
+          ? `/terms/${termData.id}`
+          : '/terms';
         
-        // 准备请求数据 - 映射前端字段名称到后端字段名称
-        const requestData = {
-          moduleId: moduleId,
+        const response = await api[method](url, {
           english: termData.term,
+          chinese: termData.foreignTerm,
           definition: termData.definition,
-          chinese: termData.foreignTerm || '',
-          notes: termData.notes || '',
-          imageUrl: termData.image || ''
-        };
-        
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestData)
+          notes: termData.notes,
+          imageUrl: termData.image,
+          moduleId
         });
         
-        if (!response.ok) {
-          throw new Error(termData.id ? 'Failed to update term' : 'Failed to create term');
+        const savedTerm = response.data;
+        
+        // 更新本地缓存
+        if (this.modules[moduleId]) {
+          if (termData.id) {
+            // 更新现有术语
+            const index = this.modules[moduleId].findIndex(t => t.id === termData.id);
+            if (index !== -1) {
+              this.modules[moduleId][index] = {
+                id: savedTerm.id || savedTerm._id,
+                term: savedTerm.english,
+                definition: savedTerm.definition,
+                foreignTerm: savedTerm.chinese,
+                image: savedTerm.imageUrl,
+                notes: savedTerm.notes
+              };
+            }
+          } else {
+            // 添加新术语
+            this.modules[moduleId].push({
+              id: savedTerm.id || savedTerm._id,
+              term: savedTerm.english,
+              definition: savedTerm.definition,
+              foreignTerm: savedTerm.chinese,
+              image: savedTerm.imageUrl,
+              notes: savedTerm.notes
+            });
+          }
         }
         
-        const result = await response.json();
-        
-        // 更新本地数据
-        await this.loadModule(moduleId);
-        
-        return result;
+        return savedTerm;
       } catch (error) {
         console.error('Error saving term:', error);
         throw error;
       }
     },
     
-    // 删除词汇条目
+    // 删除术语
     async deleteTerm(termId, moduleId) {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('未登录，请先登录');
+        await api.delete(`/terms/${termId}`);
+        
+        // 从本地缓存中移除
+        if (this.modules[moduleId]) {
+          this.modules[moduleId] = this.modules[moduleId].filter(term => term.id !== termId);
         }
         
-        const response = await fetch(`http://localhost:5000/api/terms/${termId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to delete term');
+        if (this.currentTerm && this.currentTerm.id === termId) {
+          this.currentTerm = null;
         }
-        
-        // 重新加载模块内容
-        await this.loadModule(moduleId);
         
         return true;
       } catch (error) {

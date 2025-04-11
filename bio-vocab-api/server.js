@@ -3,7 +3,8 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const connectDB = require('./config/db');
+const { connectDB, sequelize } = require('./config/db');
+const models = require('./models');
 
 // 加载环境变量
 dotenv.config();
@@ -26,6 +27,15 @@ if (process.env.NODE_ENV === 'development') {
 
 // 静态文件
 app.use('/uploads', express.static('uploads'));
+
+// 数据库同步（开发环境）
+if (process.env.NODE_ENV === 'development') {
+  sequelize.sync({ alter: true }).then(() => {
+    console.log('数据库表已同步');
+  }).catch(err => {
+    console.error('数据库同步出错:', err);
+  });
+}
 
 // 路由
 app.use('/api/auth', require('./routes/auth'));

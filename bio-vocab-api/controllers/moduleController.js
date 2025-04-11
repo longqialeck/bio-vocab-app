@@ -1,5 +1,4 @@
-const Module = require('../models/Module');
-const Term = require('../models/Term');
+const { Module, Term, User, TermProgress, sequelize } = require('../models');
 const csvParser = require('csv-parser');
 const fs = require('fs');
 const { createReadStream } = require('fs');
@@ -7,8 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const { promisify } = require('util');
 const unlink = promisify(fs.unlink);
-const Vocabulary = require('../models/Vocabulary');
-const mongoose = require('mongoose');
+const { Op } = require('sequelize');
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -51,35 +49,28 @@ const processUpload = (req, res) => {
 // Get all modules
 const getModules = async (req, res) => {
   try {
-    const filter = {};
+    const whereClause = {};
     
     console.log('[调试] 获取模块列表请求参数:', req.query);
     
     // Apply filters if provided
     if (req.query.gradeLevel) {
-      filter.gradeLevel = req.query.gradeLevel;
+      whereClause.gradeLevel = req.query.gradeLevel;
       console.log('[调试] 应用年级过滤:', req.query.gradeLevel);
     }
     
-    // 修改：默认返回所有模块，忽略active参数
-    // if (req.query.active === 'true') {
-    //   filter.isActive = true;
-    // } else if (req.query.active === 'false') {
-    //   filter.isActive = false;
-    // }
-    
-    console.log('[调试] 最终查询过滤条件:', filter);
+    console.log('[调试] 最终查询过滤条件:', whereClause);
 
-    const modules = await Module.find(filter)
-      .sort({ name: 1 })
-      .select('-__v');
+    // Use getModulesWithTermCounts instead of findAll
+    const modules = await Module.getModulesWithTermCounts(whereClause);
     
     console.log(`[调试] 查询返回了 ${modules.length} 个模块`);
     if (modules.length > 0) {
       console.log(`[调试] 第一个模块:`, {
-        id: modules[0]._id,
+        id: modules[0].id,
         name: modules[0].name,
-        isActive: modules[0].isActive
+        isActive: modules[0].isActive,
+        termCount: modules[0].termCount || 0
       });
     }
     
@@ -93,7 +84,9 @@ const getModules = async (req, res) => {
 // Get module by ID
 const getModuleById = async (req, res) => {
   try {
-    const module = await Module.findById(req.params.id).select('-__v');
+    const module = await Module.findByPk(req.params.id, {
+      attributes: { exclude: ['createdAt', 'updatedAt'] }
+    });
     
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
@@ -112,22 +105,23 @@ const createModule = async (req, res) => {
     const { name, description, gradeLevel, difficulty, isActive } = req.body;
     
     // Check if module with the same name exists
-    const existingModule = await Module.findOne({ name });
+    const existingModule = await Module.findOne({ where: { name } });
     if (existingModule) {
       return res.status(400).json({ message: 'Module with this name already exists' });
     }
     
-    const newModule = new Module({
+    const newModule = await Module.create({
       name,
+      title: name,
       description,
       gradeLevel,
       difficulty: difficulty || 1,
       isActive: isActive !== undefined ? isActive : true,
-      createdBy: req.user._id
+      createdById: req.user.id,
+      assignedToGrades: []
     });
     
-    const savedModule = await newModule.save();
-    res.status(201).json(savedModule);
+    res.status(201).json(newModule);
   } catch (error) {
     console.error('Error creating module:', error);
     res.status(500).json({ message: 'Error creating module', error: error.message });
@@ -140,27 +134,31 @@ const updateModule = async (req, res) => {
     const { name, description, gradeLevel, difficulty, isActive } = req.body;
     
     // Check if module exists
-    const module = await Module.findById(req.params.id);
+    const module = await Module.findByPk(req.params.id);
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
     }
     
     // Check if name is being changed and if it conflicts with existing module
     if (name && name !== module.name) {
-      const existingModule = await Module.findOne({ name });
+      const existingModule = await Module.findOne({ where: { name } });
       if (existingModule) {
         return res.status(400).json({ message: 'Module with this name already exists' });
       }
     }
     
     // Update fields
-    if (name) module.name = name;
-    if (description !== undefined) module.description = description;
-    if (gradeLevel) module.gradeLevel = gradeLevel;
-    if (difficulty !== undefined) module.difficulty = difficulty;
-    if (isActive !== undefined) module.isActive = isActive;
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (name) updateData.title = name;
+    if (description !== undefined) updateData.description = description;
+    if (gradeLevel) updateData.gradeLevel = gradeLevel;
+    if (difficulty !== undefined) updateData.difficulty = difficulty;
+    if (isActive !== undefined) updateData.isActive = isActive;
     
-    const updatedModule = await module.save();
+    await module.update(updateData);
+    
+    const updatedModule = await Module.findByPk(req.params.id);
     res.status(200).json(updatedModule);
   } catch (error) {
     console.error('Error updating module:', error);
@@ -170,55 +168,55 @@ const updateModule = async (req, res) => {
 
 // Delete module
 const deleteModule = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const transaction = await sequelize.transaction();
   
   try {
     const { id } = req.params;
     
     // Check if module exists
-    const module = await Module.findById(id);
+    const module = await Module.findByPk(id, { transaction });
     if (!module) {
+      await transaction.rollback();
       return res.status(404).json({ message: 'Module not found' });
     }
     
-    // Check if module has vocabulary items
-    const vocabularyCount = await Vocabulary.countDocuments({ moduleId: id });
-    if (vocabularyCount > 0) {
-      // Delete all associated vocabulary items
-      await Vocabulary.deleteMany({ moduleId: id }, { session });
-    }
+    // Delete all associated terms
+    await Term.destroy({ 
+      where: { moduleId: id },
+      transaction
+    });
     
     // Delete the module
-    await Module.findByIdAndDelete(id, { session });
+    await module.destroy({ transaction });
     
-    await session.commitTransaction();
-    session.endSession();
+    await transaction.commit();
     
     res.status(200).json({ message: 'Module deleted successfully' });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    
+    await transaction.rollback();
     console.error('Error deleting module:', error);
     res.status(500).json({ message: 'Error deleting module', error: error.message });
   }
 };
 
-// Get vocabulary by module ID
+// Get vocabulary by module
 const getVocabularyByModule = async (req, res) => {
   try {
-    const { id } = req.params;
+    const moduleId = req.params.moduleId;
     
     // Check if module exists
-    const module = await Module.findById(id);
+    const module = await Module.findByPk(moduleId);
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
     }
     
-    const vocabulary = await Vocabulary.find({ moduleId: id }).select('-__v');
+    // Get all terms in the module
+    const terms = await Term.findAll({
+      where: { moduleId },
+      attributes: { exclude: ['createdAt', 'updatedAt'] }
+    });
     
-    res.status(200).json(vocabulary);
+    res.status(200).json(terms);
   } catch (error) {
     console.error('Error fetching vocabulary:', error);
     res.status(500).json({ message: 'Error fetching vocabulary', error: error.message });
@@ -227,151 +225,186 @@ const getVocabularyByModule = async (req, res) => {
 
 // Import terms from CSV
 const importTerms = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
-    // Check if module exists
-    const moduleId = req.params.id;
-    const module = await Module.findById(moduleId);
-    
-    if (!module) {
-      return res.status(404).json({ message: 'Module not found' });
-    }
-    
-    // Process file upload
+    // Process uploaded file
     const file = await processUpload(req, res);
-    
     if (!file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
     
-    // Parse CSV file
+    const moduleId = req.body.moduleId;
+    
+    // Check if module exists
+    const module = await Module.findByPk(moduleId, { transaction });
+    if (!module) {
+      await transaction.rollback();
+      await unlink(file.path); // Delete the uploaded file
+      return res.status(404).json({ message: 'Module not found' });
+    }
+    
     const results = [];
     const errors = [];
-    let rowCount = 0;
     
+    // Parse CSV file
     await new Promise((resolve, reject) => {
       createReadStream(file.path)
         .pipe(csvParser())
-        .on('data', (data) => {
-          rowCount++;
-          // Validate required fields
-          if (!data.english || !data.chinese) {
-            errors.push({
-              row: rowCount,
-              message: 'Missing required fields (english or chinese)',
-              data
-            });
-            return;
+        .on('data', async (data) => {
+          try {
+            // Extract data from CSV row
+            const term = {
+              english: data.english || data.term || '',
+              chinese: data.chinese || data.foreignTerm || '',
+              definition: data.definition || '',
+              moduleId: moduleId,
+              createdById: req.user.id
+            };
+            
+            // Validate required fields
+            if (!term.english || !term.chinese) {
+              errors.push(`Row missing required fields: ${JSON.stringify(data)}`);
+              return;
+            }
+            
+            results.push(term);
+          } catch (err) {
+            errors.push(`Error processing row: ${err.message}`);
           }
-          
-          // Process the row data
-          results.push({
-            english: data.english.trim(),
-            chinese: data.chinese.trim(),
-            pinyin: data.pinyin ? data.pinyin.trim() : '',
-            definition: data.definition ? data.definition.trim() : '',
-            notes: data.notes ? data.notes.trim() : '',
-            examples: data.examples ? data.examples.trim() : '',
-            imageUrl: data.imageUrl ? data.imageUrl.trim() : '',
-            audioUrl: data.audioUrl ? data.audioUrl.trim() : '',
-            difficultyLevel: data.difficultyLevel ? parseInt(data.difficultyLevel, 10) || 1 : 1,
-            tags: data.tags ? data.tags.split(',').map(tag => tag.trim()) : [],
-            moduleId: moduleId
-          });
         })
-        .on('error', (error) => {
-          reject(error);
-        })
-        .on('end', () => {
-          resolve();
-        });
+        .on('end', resolve)
+        .on('error', reject);
     });
     
-    // Clean up the uploaded file
-    await unlink(file.path);
-    
-    // Check if there are any valid results
-    if (results.length === 0) {
-      return res.status(400).json({ 
-        message: 'No valid terms found in the uploaded file',
-        errors
+    // Insert terms into database
+    for (const term of results) {
+      // Check if term already exists
+      const existingTerm = await Term.findOne({
+        where: {
+          english: term.english,
+          moduleId: moduleId
+        },
+        transaction
       });
+      
+      if (existingTerm) {
+        // Update existing term
+        await existingTerm.update(term, { transaction });
+      } else {
+        // Create new term
+        await Term.create(term, { transaction });
+      }
     }
     
-    // Insert terms into the database
-    await Term.insertMany(results);
+    await transaction.commit();
+    
+    // Delete the uploaded file
+    await unlink(file.path);
     
     res.status(200).json({
-      message: `Successfully imported ${results.length} terms`,
-      termCount: results.length,
-      errorCount: errors.length,
-      errors: errors.length > 0 ? errors : undefined
+      message: `Imported ${results.length} terms with ${errors.length} errors`,
+      imported: results.length,
+      errors: errors
     });
   } catch (error) {
+    await transaction.rollback();
     console.error('Error importing terms:', error);
     
-    // If there was a file uploaded, try to clean it up
-    if (req.file && req.file.path) {
-      try {
-        await unlink(req.file.path);
-      } catch (unlinkError) {
-        console.error('Error deleting file:', unlinkError);
-      }
+    // Clean up the uploaded file
+    if (req.file) {
+      await unlink(req.file.path).catch(err => console.error('Error deleting file:', err));
     }
     
     res.status(500).json({ message: 'Error importing terms', error: error.message });
   }
 };
 
-// Get all terms for a module
+// Get terms in a module
 const getModuleTerms = async (req, res) => {
   try {
-    const { search, sort, page = 1, limit = 20 } = req.query;
-    const skip = (page - 1) * limit;
+    const moduleId = req.params.id;
+    const userId = req.user.id;
     
-    // Build the query
-    const query = { moduleId: req.params.id };
+    console.log(`[调试] 获取模块ID=${moduleId}的词汇，用户ID=${userId}`);
     
-    if (search) {
-      query.$or = [
-        { english: { $regex: search, $options: 'i' } },
-        { chinese: { $regex: search, $options: 'i' } },
-        { definition: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } }
-      ];
+    // Check if module exists
+    const module = await Module.findByPk(moduleId);
+    if (!module) {
+      console.log(`[调试] 模块ID=${moduleId}不存在`);
+      return res.status(404).json({ message: 'Module not found' });
     }
     
-    // Build the sort options
-    let sortOptions = {};
-    if (sort) {
-      const [field, direction] = sort.split(':');
-      sortOptions[field] = direction === 'desc' ? -1 : 1;
-    } else {
-      // Default sort by english alphabetically
-      sortOptions = { english: 1 };
+    console.log(`[调试] 找到模块: ${module.name}`);
+    
+    // 先尝试简单查询所有词汇，不包含关联
+    const termCount = await Term.count({ where: { moduleId } });
+    console.log(`[调试] 模块${moduleId}中有${termCount}个词汇`);
+    
+    // 如果模块没有词汇，直接返回空数组
+    if (termCount === 0) {
+      console.log(`[调试] 模块${moduleId}没有词汇，返回空数组`);
+      return res.status(200).json([]);
     }
     
-    // Get total count for pagination
-    const totalCount = await Term.countDocuments(query);
-    
-    // Get terms
-    const terms = await Term.find(query)
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(parseInt(limit, 10));
-    
-    res.status(200).json({
-      terms,
-      pagination: {
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-        currentPage: parseInt(page, 10),
-        hasNextPage: skip + terms.length < totalCount,
-        hasPrevPage: page > 1
+    // 如果有词汇，获取词汇并包含关联的进度信息
+    try {
+      // Get all terms in the module with user progress
+      const terms = await Term.findAll({
+        where: { moduleId },
+        include: [{
+          model: TermProgress,
+          where: { userId },
+          required: false
+        }],
+        order: [['english', 'ASC']]
+      });
+      
+      console.log(`[调试] 找到${terms.length}个词汇`);
+      
+      // Format response
+      const formattedTerms = terms.map(term => {
+        const termJson = term.toJSON();
+        const userProgress = term.TermProgresses && term.TermProgresses.length > 0 ? term.TermProgresses[0] : null;
+        
+        return {
+          ...termJson,
+          userProgress: userProgress ? {
+            status: userProgress.status,
+            correctCount: userProgress.correctCount,
+            incorrectCount: userProgress.incorrectCount,
+            lastReviewed: userProgress.lastReviewed,
+            nextReviewDate: userProgress.nextReviewDate
+          } : null
+        };
+      });
+      
+      console.log(`[调试] 返回${formattedTerms.length}个词汇`);
+      if (formattedTerms.length > 0) {
+        console.log(`[调试] 第一个词汇示例:`, {
+          id: formattedTerms[0].id,
+          english: formattedTerms[0].english,
+          chinese: formattedTerms[0].chinese
+        });
       }
-    });
+      
+      res.status(200).json(formattedTerms);
+    } catch (error) {
+      console.error(`[调试] 获取词汇和进度出错:`, error);
+      
+      // 备用方案：仅返回词汇数据，不包含进度
+      console.log(`[调试] 尝试备用方案: 仅获取词汇，不包含进度`);
+      const termsOnly = await Term.findAll({
+        where: { moduleId },
+        order: [['english', 'ASC']]
+      });
+      
+      console.log(`[调试] 备用方案找到${termsOnly.length}个词汇`);
+      res.status(200).json(termsOnly);
+    }
   } catch (error) {
-    console.error('Error fetching terms:', error);
-    res.status(500).json({ message: 'Error fetching terms', error: error.message });
+    console.error('Error fetching module terms:', error);
+    res.status(500).json({ message: 'Error fetching module terms', error: error.message });
   }
 };
 
@@ -380,61 +413,27 @@ const getModuleStats = async (req, res) => {
   try {
     const moduleId = req.params.id;
     
-    // Get the module
-    const module = await Module.findById(moduleId);
-    
+    // Check if module exists
+    const module = await Module.findByPk(moduleId);
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
     }
     
-    // Get stats about this module
-    const termCount = await Term.countDocuments({ moduleId });
-    const terms = await Term.find({ moduleId });
+    // Get total term count
+    const termCount = await Term.count({ where: { moduleId } });
     
-    // If user ID is provided, get user-specific stats
-    let userStats = null;
-    if (req.query.userId) {
-      const userId = req.query.userId;
-      
-      // Calculate user statistics
-      let completedCount = 0;
-      let inProgressCount = 0;
-      let notStartedCount = 0;
-      
-      for (const term of terms) {
-        const userProgress = term.learningProgress.find(
-          progress => progress.userId.toString() === userId
-        );
-        
-        if (!userProgress) {
-          notStartedCount++;
-        } else if (userProgress.status === 'mastered') {
-          completedCount++;
-        } else {
-          inProgressCount++;
-        }
-      }
-      
-      userStats = {
-        userId,
-        completedCount,
-        inProgressCount,
-        notStartedCount,
-        percentComplete: termCount > 0 ? (completedCount / termCount) * 100 : 0
-      };
-    }
+    // Get user progress statistics
+    const stats = await module.getStats();
     
-    const stats = {
+    res.status(200).json({
       moduleId,
       name: module.name,
-      totalTerms: termCount,
-      userStats
-    };
-    
-    res.json(stats);
+      termCount,
+      userProgress: stats.userProgress
+    });
   } catch (error) {
     console.error('Error fetching module stats:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Error fetching module stats', error: error.message });
   }
 };
 
@@ -447,5 +446,6 @@ module.exports = {
   getVocabularyByModule,
   importTerms,
   getModuleTerms,
-  getModuleStats
+  getModuleStats,
+  processUpload
 }; 

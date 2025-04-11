@@ -1,62 +1,67 @@
-const Term = require('../models/Term');
-const Module = require('../models/Module');
+const { Term, Module, TermProgress, sequelize } = require('../models');
 const csv = require('csv-parser');
 const fs = require('fs');
 const path = require('path');
 const { Readable } = require('stream');
+const { Op } = require('sequelize');
 
 // Get all terms with filtering and pagination
 exports.getTerms = async (req, res) => {
   try {
     const { moduleId, search, tags, difficultyLevel, page = 1, limit = 20, sort } = req.query;
-    const query = {};
+    const where = {};
     
     // Apply filters
-    if (moduleId) query.moduleId = moduleId;
-    if (difficultyLevel) query.difficultyLevel = difficultyLevel;
+    if (moduleId) where.moduleId = moduleId;
+    if (difficultyLevel) where.difficultyLevel = difficultyLevel;
     
     if (tags) {
-      const tagList = Array.isArray(tags) ? tags : [tags];
-      query.tags = { $in: tagList };
+      // Note: Searching JSON array fields in MySQL is different from MongoDB
+      // This is a simplistic implementation that might need to be revised
+      // based on the exact database configuration
+      where.tags = { [Op.like]: `%${tags}%` };
     }
     
     if (search) {
-      query.$or = [
-        { english: { $regex: search, $options: 'i' } },
-        { chinese: { $regex: search, $options: 'i' } },
-        { pinyin: { $regex: search, $options: 'i' } },
-        { definition: { $regex: search, $options: 'i' } },
-        { notes: { $regex: search, $options: 'i' } }
+      where[Op.or] = [
+        { english: { [Op.like]: `%${search}%` } },
+        { chinese: { [Op.like]: `%${search}%` } },
+        { pinyin: { [Op.like]: `%${search}%` } },
+        { definition: { [Op.like]: `%${search}%` } },
+        { notes: { [Op.like]: `%${search}%` } }
       ];
     }
     
     // Pagination
-    const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const offset = (parseInt(page, 10) - 1) * parseInt(limit, 10);
+    const limitInt = parseInt(limit, 10);
     
     // Sort options
-    let sortOptions = { english: 1 }; // Default sort
+    let order = [['english', 'ASC']]; // Default sort
     if (sort) {
       const [field, direction] = sort.split(':');
-      sortOptions = { [field]: direction === 'desc' ? -1 : 1 };
+      order = [[field, direction.toUpperCase()]];
     }
     
     // Execute query with pagination
-    const terms = await Term.find(query)
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(parseInt(limit, 10))
-      .populate('moduleId', 'name');
-    
-    // Get total count for pagination
-    const totalCount = await Term.countDocuments(query);
+    const { count, rows: terms } = await Term.findAndCountAll({
+      where,
+      order,
+      offset,
+      limit: limitInt,
+      include: [{
+        model: Module,
+        attributes: ['name']
+      }]
+    });
     
     res.status(200).json({
       terms,
       pagination: {
-        totalCount,
-        totalPages: Math.ceil(totalCount / parseInt(limit, 10)),
+        totalCount: count,
+        totalPages: Math.ceil(count / limitInt),
         currentPage: parseInt(page, 10),
-        hasNextPage: skip + terms.length < totalCount,
+        hasNextPage: offset + terms.length < count,
         hasPrevPage: parseInt(page, 10) > 1
       }
     });
@@ -69,8 +74,12 @@ exports.getTerms = async (req, res) => {
 // Get a single term by ID
 exports.getTermById = async (req, res) => {
   try {
-    const term = await Term.findById(req.params.id)
-      .populate('moduleId', 'name');
+    const term = await Term.findByPk(req.params.id, {
+      include: [{
+        model: Module,
+        attributes: ['name']
+      }]
+    });
     
     if (!term) {
       return res.status(404).json({ message: 'Term not found' });
@@ -101,15 +110,17 @@ exports.createTerm = async (req, res) => {
     } = req.body;
     
     // Validate module exists
-    const module = await Module.findById(moduleId);
+    const module = await Module.findByPk(moduleId);
     if (!module) {
       return res.status(404).json({ message: 'Module not found' });
     }
     
     // Check for duplicate term in the same module
     const existingTerm = await Term.findOne({
-      english,
-      moduleId
+      where: {
+        english,
+        moduleId
+      }
     });
     
     if (existingTerm) {
@@ -117,22 +128,20 @@ exports.createTerm = async (req, res) => {
     }
     
     // Create new term
-    const newTerm = new Term({
+    const newTerm = await Term.create({
       english,
       chinese,
       pinyin,
       definition,
       notes,
-      examples,
+      examples: examples || [],
       imageUrl,
       audioUrl,
       difficultyLevel: difficultyLevel || 1,
       tags: tags || [],
       moduleId,
-      createdBy: req.user._id
+      createdById: req.user.id
     });
-    
-    await newTerm.save();
     
     res.status(201).json(newTerm);
   } catch (error) {
@@ -160,7 +169,7 @@ exports.updateTerm = async (req, res) => {
     
     // If moduleId is provided, validate it exists
     if (moduleId) {
-      const module = await Module.findById(moduleId);
+      const module = await Module.findByPk(moduleId);
       if (!module) {
         return res.status(404).json({ message: 'Module not found' });
       }
@@ -169,9 +178,11 @@ exports.updateTerm = async (req, res) => {
     // If english and moduleId are provided, check for duplicates (excluding this one)
     if (english && moduleId) {
       const existingTerm = await Term.findOne({
-        english,
-        moduleId,
-        _id: { $ne: req.params.id }
+        where: {
+          english,
+          moduleId,
+          id: { [Op.ne]: req.params.id }
+        }
       });
       
       if (existingTerm) {
@@ -179,29 +190,35 @@ exports.updateTerm = async (req, res) => {
       }
     }
     
-    // Update the term
-    const updatedTerm = await Term.findByIdAndUpdate(
-      req.params.id,
-      {
-        english,
-        chinese,
-        pinyin,
-        definition,
-        notes,
-        examples,
-        imageUrl,
-        audioUrl,
-        difficultyLevel,
-        tags,
-        moduleId,
-        updatedAt: Date.now()
-      },
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedTerm) {
+    // Get the current term
+    const term = await Term.findByPk(req.params.id);
+    if (!term) {
       return res.status(404).json({ message: 'Term not found' });
     }
+    
+    // Update the term
+    const updateData = {};
+    if (english !== undefined) updateData.english = english;
+    if (chinese !== undefined) updateData.chinese = chinese;
+    if (pinyin !== undefined) updateData.pinyin = pinyin;
+    if (definition !== undefined) updateData.definition = definition;
+    if (notes !== undefined) updateData.notes = notes;
+    if (examples !== undefined) updateData.examples = examples;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (audioUrl !== undefined) updateData.audioUrl = audioUrl;
+    if (difficultyLevel !== undefined) updateData.difficultyLevel = difficultyLevel;
+    if (tags !== undefined) updateData.tags = tags;
+    if (moduleId !== undefined) updateData.moduleId = moduleId;
+    
+    await term.update(updateData);
+    
+    // Get updated term with module info
+    const updatedTerm = await Term.findByPk(req.params.id, {
+      include: [{
+        model: Module,
+        attributes: ['name']
+      }]
+    });
     
     res.status(200).json(updatedTerm);
   } catch (error) {
@@ -212,184 +229,196 @@ exports.updateTerm = async (req, res) => {
 
 // Delete a term
 exports.deleteTerm = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
-    const deletedTerm = await Term.findByIdAndDelete(req.params.id);
+    // Find the term to delete
+    const term = await Term.findByPk(req.params.id, { transaction });
     
-    if (!deletedTerm) {
+    if (!term) {
+      await transaction.rollback();
       return res.status(404).json({ message: 'Term not found' });
     }
     
+    // Delete associated progress records
+    await TermProgress.destroy({
+      where: { termId: req.params.id },
+      transaction
+    });
+    
+    // Delete the term
+    await term.destroy({ transaction });
+    
+    await transaction.commit();
+    
     res.status(200).json({ message: 'Term deleted successfully' });
   } catch (error) {
+    await transaction.rollback();
     console.error('Error deleting term:', error);
     res.status(500).json({ message: 'Error deleting term', error: error.message });
   }
 };
 
-// Batch delete terms
-exports.batchDeleteTerms = async (req, res) => {
-  try {
-    const { termIds } = req.body;
-    
-    if (!termIds || !Array.isArray(termIds) || termIds.length === 0) {
-      return res.status(400).json({ message: 'No term IDs provided for deletion' });
-    }
-    
-    const result = await Term.deleteMany({ _id: { $in: termIds } });
-    
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: 'No terms found to delete' });
-    }
-    
-    res.status(200).json({
-      message: `Successfully deleted ${result.deletedCount} terms`,
-      deletedCount: result.deletedCount
-    });
-  } catch (error) {
-    console.error('Error batch deleting terms:', error);
-    res.status(500).json({ message: 'Error batch deleting terms', error: error.message });
-  }
-};
-
-// Move terms to another module
-exports.moveTerms = async (req, res) => {
-  try {
-    const { termIds, targetModuleId } = req.body;
-    
-    if (!termIds || !Array.isArray(termIds) || termIds.length === 0) {
-      return res.status(400).json({ message: 'No term IDs provided' });
-    }
-    
-    if (!targetModuleId) {
-      return res.status(400).json({ message: 'Target module ID is required' });
-    }
-    
-    // Validate target module exists
-    const targetModule = await Module.findById(targetModuleId);
-    if (!targetModule) {
-      return res.status(404).json({ message: 'Target module not found' });
-    }
-    
-    // Update the terms
-    const result = await Term.updateMany(
-      { _id: { $in: termIds } },
-      {
-        moduleId: targetModuleId,
-        updatedAt: Date.now()
-      }
-    );
-    
-    if (result.nModified === 0) {
-      return res.status(404).json({ message: 'No terms found to move' });
-    }
-    
-    res.status(200).json({
-      message: `Successfully moved ${result.nModified} terms to the target module`,
-      movedCount: result.nModified
-    });
-  } catch (error) {
-    console.error('Error moving terms:', error);
-    res.status(500).json({ message: 'Error moving terms', error: error.message });
-  }
-};
-
 // Import terms from CSV
 exports.importTerms = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: '没有上传文件' });
+    // Check if file and moduleId are provided
+    if (!req.body.terms || !Array.isArray(req.body.terms)) {
+      await transaction.rollback();
+      return res.status(400).json({ message: 'No terms data provided' });
     }
     
     const { moduleId } = req.body;
+    if (!moduleId) {
+      await transaction.rollback();
+      return res.status(400).json({ message: 'Module ID is required' });
+    }
     
-    // Check if module exists
-    const module = await Module.findById(moduleId);
+    // Validate module exists
+    const module = await Module.findByPk(moduleId, { transaction });
     if (!module) {
-      return res.status(404).json({ message: '找不到指定模块' });
+      await transaction.rollback();
+      return res.status(404).json({ message: 'Module not found' });
     }
     
     const results = [];
     const errors = [];
-    let successCount = 0;
     
-    // Create readable stream from buffer
-    const bufferStream = new Readable();
-    bufferStream.push(req.file.buffer);
-    bufferStream.push(null);
-    
-    // Process CSV file
-    await new Promise((resolve, reject) => {
-      bufferStream
-        .pipe(csv())
-        .on('data', async (data) => {
-          results.push(data);
-        })
-        .on('error', (error) => {
-          reject(error);
-        })
-        .on('end', resolve);
-    });
-    
-    // Process each row
-    for (const row of results) {
+    // Process each term
+    for (const termData of req.body.terms) {
       try {
-        // Handle field names with potential spaces
-        const english = row.english || row.English || row['English Term'] || '';
-        const chinese = row.chinese || row.Chinese || row['Chinese Term'] || '';
-        const description = row.description || row.Description || row['Description'] || '';
-        const unit = parseInt(row.unit || row.Unit || '1', 10) || 1;
-        const imageUrl = row.imageUrl || row.image || row['Image URL'] || '';
-        const importance = row.importance || row.Importance || 'normal';
-        
-        if (!english || !chinese) {
-          errors.push(`行缺少必要字段 (英文: ${english}, 中文: ${chinese})`);
+        // Validate required fields
+        if (!termData.english || !termData.chinese) {
+          errors.push(`Term missing required fields: ${JSON.stringify(termData)}`);
           continue;
         }
         
-        // Check if term already exists
-        const existingTerm = await Term.findOne({ moduleId, english });
-        if (existingTerm) {
-          // Update existing term
-          await Term.findByIdAndUpdate(existingTerm._id, {
-            chinese,
-            description,
-            unit,
-            imageUrl,
-            importance,
-            updatedAt: Date.now()
-          });
-        } else {
-          // Create new term
-          await Term.create({
-            moduleId,
-            english,
-            chinese,
-            description,
-            unit,
-            imageUrl,
-            importance,
-            learningProgress: []
-          });
-          // Increment term count
-          successCount++;
-        }
-      } catch (error) {
-        errors.push(`处理行时出错: ${error.message}`);
+        // Create term object
+        const term = {
+          english: termData.english,
+          chinese: termData.chinese,
+          definition: termData.definition || '',
+          notes: termData.notes || '',
+          pinyin: termData.pinyin || '',
+          difficultyLevel: termData.difficultyLevel || 2,
+          tags: termData.tags || [],
+          moduleId,
+          createdById: req.user.id
+        };
+        
+        results.push(term);
+      } catch (err) {
+        errors.push(`Error processing term: ${err.message}`);
       }
     }
     
-    // Update module term count
-    if (successCount > 0) {
-      await Module.findByIdAndUpdate(moduleId, { $inc: { termCount: successCount } });
+    // Insert terms into database
+    for (const term of results) {
+      // Check if term already exists
+      const existingTerm = await Term.findOne({
+        where: {
+          english: term.english,
+          moduleId
+        },
+        transaction
+      });
+      
+      if (existingTerm) {
+        // Update existing term
+        await existingTerm.update(term, { transaction });
+      } else {
+        // Create new term
+        await Term.create(term, { transaction });
+      }
     }
     
+    await transaction.commit();
+    
     res.status(200).json({
-      message: `成功导入 ${successCount} 个词汇`,
-      totalRows: results.length,
-      successCount,
-      errors: errors.length > 0 ? errors : null
+      message: `Imported ${results.length} terms with ${errors.length} errors`,
+      imported: results.length,
+      errors
     });
   } catch (error) {
-    res.status(500).json({ message: '导入词汇失败', error: error.message });
+    await transaction.rollback();
+    console.error('Error importing terms:', error);
+    res.status(500).json({ message: 'Error importing terms', error: error.message });
+  }
+};
+
+// Get terms due for review
+exports.getTermsDueForReview = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const terms = await Term.getDueForReview(userId);
+    
+    res.status(200).json(terms);
+  } catch (error) {
+    console.error('Error fetching terms for review:', error);
+    res.status(500).json({ message: 'Error fetching terms for review', error: error.message });
+  }
+};
+
+// Update term learning progress
+exports.updateTermProgress = async (req, res) => {
+  try {
+    const { termId } = req.params;
+    const { status, isCorrect } = req.body;
+    const userId = req.user.id;
+    
+    // Validate status
+    const validStatuses = ['new', 'learning', 'reviewing', 'mastered'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be one of: new, learning, reviewing, mastered' });
+    }
+    
+    // Find the term
+    const term = await Term.findByPk(termId);
+    if (!term) {
+      return res.status(404).json({ message: 'Term not found' });
+    }
+    
+    // Update the progress
+    await term.updateProgress(userId, status, isCorrect === true);
+    
+    // Get the updated term with progress
+    const updatedTerm = await Term.findByPk(termId, {
+      include: [{
+        model: TermProgress,
+        where: { userId },
+        required: false
+      }]
+    });
+    
+    const progress = updatedTerm.TermProgresses && updatedTerm.TermProgresses[0];
+    
+    res.status(200).json({
+      term: updatedTerm,
+      progress: progress ? {
+        status: progress.status,
+        correctCount: progress.correctCount,
+        incorrectCount: progress.incorrectCount,
+        lastReviewed: progress.lastReviewed,
+        nextReviewDate: progress.nextReviewDate
+      } : null
+    });
+  } catch (error) {
+    console.error('Error updating term progress:', error);
+    res.status(500).json({ message: 'Error updating term progress', error: error.message });
+  }
+};
+
+// Get user's progress statistics
+exports.getUserStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const stats = await Term.getUserStats(userId);
+    
+    res.status(200).json(stats);
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ message: 'Error fetching user stats', error: error.message });
   }
 }; 

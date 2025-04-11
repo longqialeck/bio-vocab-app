@@ -1,6 +1,4 @@
-const Vocabulary = require('../models/vocabularyModel');
-const Module = require('../models/Module');
-const User = require('../models/User');
+const { Term, Module, User, sequelize } = require('../models');
 const asyncHandler = require('express-async-handler');
 const multer = require('multer');
 const csv = require('fast-csv');
@@ -8,7 +6,7 @@ const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
 const { parseCsv } = require('../utils/fileUtils');
-const mongoose = require('mongoose');
+const { Op } = require('sequelize');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -39,14 +37,25 @@ const upload = multer({
   }
 }).single('file');
 
+// 使用Term模型替代Vocabulary模型，保持API兼容性
 // @desc    Get all vocabulary items
 // @route   GET /api/vocabulary
 // @access  Private
 const getAllVocabulary = asyncHandler(async (req, res) => {
   const moduleId = req.query.moduleId;
-  const filter = moduleId ? { moduleId } : {};
+  const where = moduleId ? { moduleId } : {};
   
-  const vocabulary = await Vocabulary.find(filter);
+  const terms = await Term.findAll({ 
+    where,
+    include: [{
+      model: Module,
+      attributes: ['name']
+    }]
+  });
+  
+  // 将Term格式转换为Vocabulary格式以保持API兼容性
+  const vocabulary = terms.map(term => mapTermToVocabulary(term));
+  
   res.status(200).json(vocabulary);
 });
 
@@ -54,17 +63,25 @@ const getAllVocabulary = asyncHandler(async (req, res) => {
 // @route   GET /api/vocabulary/:id
 // @access  Private
 const getVocabularyById = asyncHandler(async (req, res) => {
-  const vocabulary = await Vocabulary.findById(req.params.id);
+  const term = await Term.findByPk(req.params.id, {
+    include: [{
+      model: Module,
+      attributes: ['name']
+    }]
+  });
   
-  if (!vocabulary) {
+  if (!term) {
     res.status(404);
     throw new Error('Vocabulary item not found');
   }
   
+  // 将Term格式转换为Vocabulary格式以保持API兼容性
+  const vocabulary = mapTermToVocabulary(term);
+  
   res.status(200).json(vocabulary);
 });
 
-// Helper function to map between Vocabulary model and Term model
+// Helper function to map between Term model and Vocabulary format for API compatibility
 const mapVocabularyToTerm = (vocabulary) => {
   return {
     english: vocabulary.term,
@@ -79,15 +96,19 @@ const mapVocabularyToTerm = (vocabulary) => {
 };
 
 const mapTermToVocabulary = (term) => {
+  const termData = term.toJSON ? term.toJSON() : term;
   return {
-    term: term.english,
-    foreignTerm: term.chinese,
-    definition: term.definition,
-    notes: term.notes,
-    imageUrl: term.imageUrl,
-    moduleId: term.moduleId,
-    difficulty: term.difficultyLevel <= 1 ? 'easy' : (term.difficultyLevel >= 3 ? 'hard' : 'medium'),
-    tags: term.tags || []
+    id: termData.id,
+    term: termData.english,
+    foreignTerm: termData.chinese,
+    definition: termData.definition,
+    notes: termData.notes,
+    imageUrl: termData.imageUrl,
+    moduleId: termData.moduleId,
+    difficulty: termData.difficultyLevel <= 1 ? 'easy' : (termData.difficultyLevel >= 3 ? 'hard' : 'medium'),
+    tags: termData.tags || [],
+    createdAt: termData.createdAt,
+    updatedAt: termData.updatedAt
   };
 };
 
@@ -103,37 +124,25 @@ const createVocabulary = asyncHandler(async (req, res) => {
   }
   
   // Check if module exists
-  const moduleExists = await Module.findById(moduleId);
+  const moduleExists = await Module.findByPk(moduleId);
   if (!moduleExists) {
     res.status(404);
     throw new Error('Module not found');
   }
   
-  // First create in the Vocabulary model
-  const vocabulary = await Vocabulary.create({
-    term,
+  // Create term (which replaces vocabulary in new system)
+  const newTerm = await Term.create({
+    english: term,
+    chinese: foreignTerm || '',
     definition,
-    foreignTerm: foreignTerm || '',
     notes: notes || '',
     imageUrl: imageUrl || '',
-    moduleId
+    moduleId,
+    createdById: req.user ? req.user.id : null
   });
   
-  // Also create in the Term model for backward compatibility
-  try {
-    const Term = mongoose.model('Term');
-    await Term.create({
-      english: term,
-      chinese: foreignTerm || '',
-      definition: definition,
-      notes: notes || '',
-      imageUrl: imageUrl || '',
-      moduleId,
-      createdBy: req.user ? req.user._id : undefined
-    });
-  } catch (error) {
-    console.log('Warning: Could not create Term record', error.message);
-  }
+  // Return in vocabulary format for API compatibility
+  const vocabulary = mapTermToVocabulary(newTerm);
   
   res.status(201).json(vocabulary);
 });
@@ -142,277 +151,185 @@ const createVocabulary = asyncHandler(async (req, res) => {
 // @route   PUT /api/vocabulary/:id
 // @access  Private/Admin
 const updateVocabulary = asyncHandler(async (req, res) => {
-  const vocabulary = await Vocabulary.findById(req.params.id);
+  const term = await Term.findByPk(req.params.id);
   
-  if (!vocabulary) {
+  if (!term) {
     res.status(404);
     throw new Error('Vocabulary item not found');
   }
   
   // If moduleId is being updated, check if new module exists
-  if (req.body.moduleId && req.body.moduleId !== vocabulary.moduleId.toString()) {
-    const moduleExists = await Module.findById(req.body.moduleId);
+  if (req.body.moduleId && req.body.moduleId !== term.moduleId) {
+    const moduleExists = await Module.findByPk(req.body.moduleId);
     if (!moduleExists) {
       res.status(404);
       throw new Error('Module not found');
     }
   }
   
-  const updatedVocabulary = await Vocabulary.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-  
-  // Also update in the Term model for backward compatibility
-  try {
-    const Term = mongoose.model('Term');
-    // Try to find a matching Term by english/term value
-    const matchingTerm = await Term.findOne({ 
-      english: vocabulary.term,
-      moduleId: vocabulary.moduleId
-    });
-    
-    if (matchingTerm) {
-      await Term.updateOne(
-        { _id: matchingTerm._id },
-        {
-          english: req.body.term || vocabulary.term,
-          chinese: req.body.foreignTerm || vocabulary.foreignTerm,
-          definition: req.body.definition || vocabulary.definition,
-          notes: req.body.notes || vocabulary.notes,
-          imageUrl: req.body.imageUrl || vocabulary.imageUrl,
-          moduleId: req.body.moduleId || vocabulary.moduleId
-        }
-      );
-    }
-  } catch (error) {
-    console.log('Warning: Could not update Term record', error.message);
+  // Map vocabulary update to term update
+  const updateData = {};
+  if (req.body.term) updateData.english = req.body.term;
+  if (req.body.foreignTerm !== undefined) updateData.chinese = req.body.foreignTerm;
+  if (req.body.definition !== undefined) updateData.definition = req.body.definition;
+  if (req.body.notes !== undefined) updateData.notes = req.body.notes;
+  if (req.body.imageUrl !== undefined) updateData.imageUrl = req.body.imageUrl;
+  if (req.body.moduleId !== undefined) updateData.moduleId = req.body.moduleId;
+  if (req.body.difficulty !== undefined) {
+    updateData.difficultyLevel = req.body.difficulty === 'easy' ? 1 : 
+                                (req.body.difficulty === 'hard' ? 3 : 2);
   }
+  if (req.body.tags !== undefined) updateData.tags = req.body.tags;
   
-  res.status(200).json(updatedVocabulary);
+  await term.update(updateData);
+  
+  // Get updated term
+  const updatedTerm = await Term.findByPk(req.params.id, {
+    include: [{
+      model: Module,
+      attributes: ['name']
+    }]
+  });
+  
+  // Return in vocabulary format for API compatibility
+  const vocabulary = mapTermToVocabulary(updatedTerm);
+  
+  res.status(200).json(vocabulary);
 });
 
 // @desc    Delete vocabulary item
 // @route   DELETE /api/vocabulary/:id
 // @access  Private/Admin
 const deleteVocabulary = asyncHandler(async (req, res) => {
-  const vocabulary = await Vocabulary.findById(req.params.id);
+  const term = await Term.findByPk(req.params.id);
   
-  if (!vocabulary) {
+  if (!term) {
     res.status(404);
     throw new Error('Vocabulary item not found');
   }
   
-  await vocabulary.remove();
+  await term.destroy();
   
-  // Also delete from the Term model for backward compatibility
-  try {
-    const Term = mongoose.model('Term');
-    await Term.deleteOne({ 
-      english: vocabulary.term,
-      moduleId: vocabulary.moduleId
-    });
-  } catch (error) {
-    console.log('Warning: Could not delete Term record', error.message);
-  }
-  
-  res.status(200).json({ id: req.params.id });
+  res.status(200).json({ message: 'Vocabulary item removed' });
 });
 
-// @desc    Import vocabulary from CSV
+// @desc    Import vocabulary from CSV/Excel file
 // @route   POST /api/vocabulary/import
 // @access  Private/Admin
 const importVocabulary = asyncHandler(async (req, res) => {
-  if (!req.file) {
-    res.status(400);
-    throw new Error('Please upload a file');
-  }
-  
-  const { moduleId } = req.body;
-  
-  if (!moduleId) {
-    res.status(400);
-    throw new Error('Please provide a module ID');
-  }
-  
-  // Check if module exists
-  const moduleExists = await Module.findById(moduleId);
-  if (!moduleExists) {
-    res.status(404);
-    throw new Error('Module not found');
-  }
+  const transaction = await sequelize.transaction();
   
   try {
-    // Parse CSV file
-    const vocabularyItems = await parseCsv(req.file.path);
-    
-    // Validate and prepare data
-    const validItems = vocabularyItems.filter(item => 
-      item.term && item.definition
-    ).map(item => ({
-      ...item,
-      moduleId
-    }));
-    
-    if (validItems.length === 0) {
-      res.status(400);
-      throw new Error('No valid vocabulary items found in the file');
-    }
-    
-    // Insert vocabulary items
-    const vocabularyResult = await Vocabulary.insertMany(validItems);
-    
-    // Also insert into Term model for backward compatibility
-    try {
-      const Term = mongoose.model('Term');
-      const termItems = validItems.map(item => ({
-        english: item.term,
-        chinese: item.foreignTerm || '',
-        definition: item.definition,
-        notes: item.notes || '',
-        imageUrl: item.imageUrl || '',
-        moduleId,
-        createdBy: req.user ? req.user._id : undefined,
-        difficultyLevel: item.difficulty === 'easy' ? 1 : (item.difficulty === 'hard' ? 3 : 2)
-      }));
+    // Handle file upload
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ message: err.message });
+      }
       
-      await Term.insertMany(termItems);
-    } catch (termError) {
-      console.log('Warning: Could not create Term records', termError.message);
-    }
-    
-    res.status(201).json({
-      success: true,
-      count: vocabularyResult.length,
-      data: vocabularyResult
+      if (!req.file) {
+        return res.status(400).json({ message: '请上传文件' });
+      }
+      
+      const { moduleId } = req.body;
+      if (!moduleId) {
+        return res.status(400).json({ message: '请提供模块ID' });
+      }
+      
+      // Check if module exists
+      const module = await Module.findByPk(moduleId, { transaction });
+      if (!module) {
+        await transaction.rollback();
+        return res.status(404).json({ message: '找不到指定模块' });
+      }
+      
+      let records = [];
+      let errors = [];
+      
+      // Process different file types
+      const fileExt = path.extname(req.file.path).toLowerCase();
+      if (fileExt === '.csv') {
+        records = await parseCsv(req.file.path);
+      } else if (fileExt === '.xlsx' || fileExt === '.xls') {
+        const workbook = xlsx.readFile(req.file.path);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        records = xlsx.utils.sheet_to_json(worksheet);
+      }
+      
+      if (records.length === 0) {
+        await transaction.rollback();
+        return res.status(400).json({ message: '文件中没有有效记录' });
+      }
+      
+      let count = 0;
+      
+      // Process each record
+      for (const record of records) {
+        try {
+          const term = record.term || record.english || record.英文;
+          const foreignTerm = record.foreignTerm || record.chinese || record.中文;
+          const definition = record.definition || record.description || record.描述 || '';
+          
+          if (!term || !foreignTerm) {
+            errors.push(`记录缺少必要字段: ${JSON.stringify(record)}`);
+            continue;
+          }
+          
+          // Check if term already exists
+          const [termEntry, created] = await Term.findOrCreate({
+            where: { 
+              english: term,
+              moduleId
+            },
+            defaults: {
+              english: term, 
+              chinese: foreignTerm,
+              definition,
+              notes: record.notes || record.备注 || '',
+              imageUrl: record.imageUrl || record.图片 || '',
+              difficultyLevel: record.difficulty === 'easy' ? 1 : 
+                            (record.difficulty === 'hard' ? 3 : 2),
+              tags: record.tags ? 
+                (typeof record.tags === 'string' ? record.tags.split(',') : record.tags) 
+                : [],
+              moduleId,
+              createdById: req.user.id
+            },
+            transaction
+          });
+          
+          if (!created) {
+            // Update existing term
+            await termEntry.update({
+              chinese: foreignTerm,
+              definition,
+              notes: record.notes || record.备注 || '',
+              imageUrl: record.imageUrl || record.图片 || ''
+            }, { transaction });
+          } else {
+            count++;
+          }
+        } catch (error) {
+          errors.push(`处理记录出错: ${error.message}`);
+        }
+      }
+      
+      // Delete uploaded file
+      fs.unlinkSync(req.file.path);
+      
+      await transaction.commit();
+      
+      res.status(200).json({
+        message: `成功导入 ${count} 个术语，有 ${errors.length} 个错误`,
+        count,
+        errors
+      });
     });
   } catch (error) {
-    res.status(500);
-    throw new Error(`Error importing vocabulary: ${error.message}`);
+    await transaction.rollback();
+    console.error('导入词汇出错:', error);
+    res.status(500).json({ message: '导入词汇时出错', error: error.message });
   }
-});
-
-// @desc    Delete multiple vocabulary items
-// @route   DELETE /api/vocabulary/bulk
-// @access  Private/Admin
-const bulkDeleteVocabulary = asyncHandler(async (req, res) => {
-  const { ids } = req.body;
-  
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    res.status(400);
-    throw new Error('Please provide an array of vocabulary IDs to delete');
-  }
-  
-  const result = await Vocabulary.deleteMany({ _id: { $in: ids } });
-  
-  res.status(200).json({
-    success: true,
-    count: result.deletedCount,
-    ids
-  });
-});
-
-// Module Management
-
-// @desc    Get all modules
-// @route   GET /api/vocabulary/modules
-// @access  Private
-const getAllModules = asyncHandler(async (req, res) => {
-  const modules = await Module.find({});
-  res.status(200).json(modules);
-});
-
-// @desc    Get module by ID
-// @route   GET /api/vocabulary/modules/:id
-// @access  Private
-const getModuleById = asyncHandler(async (req, res) => {
-  const module = await Module.findById(req.params.id);
-  
-  if (!module) {
-    res.status(404);
-    throw new Error('Module not found');
-  }
-  
-  res.status(200).json(module);
-});
-
-// @desc    Create module
-// @route   POST /api/vocabulary/modules
-// @access  Private/Admin
-const createModule = asyncHandler(async (req, res) => {
-  const { name, description, gradeLevel } = req.body;
-  
-  if (!name) {
-    res.status(400);
-    throw new Error('Please provide a module name');
-  }
-  
-  const moduleExists = await Module.findOne({ name });
-  if (moduleExists) {
-    res.status(400);
-    throw new Error('Module with that name already exists');
-  }
-  
-  const module = await Module.create({
-    name,
-    description: description || '',
-    gradeLevel: gradeLevel || '',
-  });
-  
-  res.status(201).json(module);
-});
-
-// @desc    Update module
-// @route   PUT /api/vocabulary/modules/:id
-// @access  Private/Admin
-const updateModule = asyncHandler(async (req, res) => {
-  const module = await Module.findById(req.params.id);
-  
-  if (!module) {
-    res.status(404);
-    throw new Error('Module not found');
-  }
-  
-  // Check if updating to a name that already exists
-  if (req.body.name && req.body.name !== module.name) {
-    const moduleWithName = await Module.findOne({ name: req.body.name });
-    if (moduleWithName) {
-      res.status(400);
-      throw new Error('Module with that name already exists');
-    }
-  }
-  
-  const updatedModule = await Module.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
-  
-  res.status(200).json(updatedModule);
-});
-
-// @desc    Delete module
-// @route   DELETE /api/vocabulary/modules/:id
-// @access  Private/Admin
-const deleteModule = asyncHandler(async (req, res) => {
-  const module = await Module.findById(req.params.id);
-  
-  if (!module) {
-    res.status(404);
-    throw new Error('Module not found');
-  }
-  
-  // Check if module has vocabulary items
-  const vocabularyCount = await Vocabulary.countDocuments({ moduleId: req.params.id });
-  if (vocabularyCount > 0) {
-    res.status(400);
-    throw new Error('Cannot delete module that contains vocabulary items');
-  }
-  
-  await module.remove();
-  
-  res.status(200).json({ id: req.params.id });
 });
 
 module.exports = {
@@ -422,10 +339,5 @@ module.exports = {
   updateVocabulary,
   deleteVocabulary,
   importVocabulary,
-  bulkDeleteVocabulary,
-  getAllModules,
-  getModuleById,
-  createModule,
-  updateModule,
-  deleteModule
+  upload
 }; 

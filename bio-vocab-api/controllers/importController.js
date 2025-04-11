@@ -30,6 +30,15 @@ exports.parseFile = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: '文件解析错误' });
+    
+    // 确保清理上传的文件
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('删除文件出错:', unlinkError);
+      }
+    }
   }
 };
 
@@ -64,12 +73,47 @@ const parseCSV = (filePath) => {
 const normalizeData = (data) => {
   return data.map(row => {
     // 尝试多种可能的列名匹配
-    return {
-      term: row.term || row.Term || row.TERM || row.word || row.Word || row.英文 || '',
+    const term = {
+      english: row.term || row.Term || row.TERM || row.word || row.Word || row.英文 || row.english || row.English || '',
+      chinese: row.foreignTerm || row.ForeignTerm || row.chinese || row.Chinese || row.中文 || '',
       definition: row.definition || row.Definition || row.DEFINITION || row.meaning || row.英文定义 || '',
-      foreignTerm: row.foreignTerm || row.ForeignTerm || row.chinese || row.Chinese || row.中文 || '',
+      pinyin: row.pinyin || row.Pinyin || row.PINYIN || row.拼音 || '',
       notes: row.notes || row.Notes || row.note || row.注释 || '',
-      image: row.image || row.Image || row.imageUrl || row.图片 || ''
+      imageUrl: row.image || row.Image || row.imageUrl || row.图片 || '',
+      difficultyLevel: convertDifficulty(row.difficulty || row.Difficulty || row.难度 || 'medium'),
+      tags: convertTags(row.tags || row.Tags || row.标签 || '')
     };
-  }).filter(term => term.term && (term.definition || term.foreignTerm)); // 至少要有术语和一种定义
+    
+    return term;
+  }).filter(term => term.english && term.chinese); // 术语和中文翻译都需要有效
+};
+
+// 将难度文本转换为数字
+const convertDifficulty = (difficulty) => {
+  if (typeof difficulty === 'number') {
+    return difficulty >= 1 && difficulty <= 3 ? difficulty : 2;
+  }
+  
+  const difficultyText = String(difficulty).toLowerCase();
+  
+  if (difficultyText === 'easy' || difficultyText === '简单' || difficultyText === '1') {
+    return 1;
+  } else if (difficultyText === 'hard' || difficultyText === '困难' || difficultyText === '3') {
+    return 3;
+  } else {
+    return 2; // medium/普通/默认
+  }
+};
+
+// 将标签文本转换为数组
+const convertTags = (tags) => {
+  if (Array.isArray(tags)) {
+    return tags;
+  }
+  
+  if (typeof tags === 'string' && tags.trim()) {
+    return tags.split(/[,;，；]/).map(tag => tag.trim()).filter(Boolean);
+  }
+  
+  return [];
 }; 

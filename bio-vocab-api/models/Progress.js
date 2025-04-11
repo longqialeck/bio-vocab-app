@@ -1,30 +1,47 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const ProgressSchema = new mongoose.Schema({
+const Progress = sequelize.define('Progress', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
   },
   moduleId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Module',
-    required: true
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Modules',
+      key: 'id'
+    }
   },
-  completedTerms: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Term'
-  }],
+  completedTermIds: {
+    type: DataTypes.JSON,
+    defaultValue: []
+  },
   progress: {
-    type: Number,
-    default: 0
+    type: DataTypes.FLOAT,
+    defaultValue: 0
   },
   lastStudied: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  indexes: [
+    { fields: ['userId'] },
+    { fields: ['moduleId'] },
+    { fields: ['userId', 'moduleId'], unique: true }
+  ]
 });
 
-module.exports = mongoose.model('Progress', ProgressSchema); 
+module.exports = Progress; 

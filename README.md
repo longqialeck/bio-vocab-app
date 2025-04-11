@@ -15,8 +15,8 @@
 ### 后端
 - Node.js
 - Express
-- MongoDB (数据库)
-- Mongoose (ODM)
+- MySQL/MariaDB (数据库)
+- Sequelize (ORM)
 - JWT (身份验证)
 - Multer (文件上传)
 
@@ -43,7 +43,9 @@ bio-vocab-app/
 │   ├── middleware/       # 中间件
 │   ├── models/           # 数据模型
 │   ├── routes/           # 路由定义
-│   ├── seeds/            # 种子数据
+│   ├── scripts/          # 脚本工具
+│   ├── migrations/       # 数据库迁移
+│   ├── seeders/          # 种子数据
 │   ├── utils/            # 工具函数
 │   ├── uploads/          # 上传文件目录
 │   └── server.js         # 服务器入口
@@ -57,31 +59,51 @@ bio-vocab-app/
 
 - **User**: 用户信息和认证
 - **Module**: 词汇模块分类
-- **Term/Vocabulary**: 词汇条目
-- **Progress**: 学习进度跟踪
+- **Term**: 词汇条目
+- **Progress**: 学习总体进度
+- **TermProgress**: 单词学习进度
 
 ## 主要功能
 
+### 用户功能
 - 用户认证与授权 (普通用户/管理员)
-- 词汇模块管理
-- 词汇条目管理
-- 从CSV/Excel导入词汇
-- 学习进度跟踪
-- 自适应学习算法
+- 词汇模块选择与学习
+- 学习进度跟踪与统计：
+  - 已学单词数统计
+  - 连续学习天数计算(学习streak)
+  - 测验完成数统计
 - 测验功能：
   - 单模块测验
   - 综合测验(多模块选择、多种题型)
-- 数据分析与报告
+- 个人资料管理
 
-## 安装部署步骤
+### 管理员功能
+- 用户管理
+- 词汇模块管理：
+  - 创建、编辑、删除模块
+  - 查看每个模块的词汇数量
+- 词汇条目管理
+- 从CSV/Excel导入词汇
+- 数据分析与报告
+- 管理员仪表盘：
+  - 用户统计：总用户数、今日活跃用户、本周新增用户
+  - 词汇统计：总模块数、总词汇量、本月新增词汇
+  - 学习统计：已学习词汇数、今日学习词汇数、平均完成率
+
+### 学习功能
+- 自适应学习算法
+- 进度追踪
+- 学习记录统计
+
+## 详细部署步骤
 
 ### 前置条件
 
 - Node.js (v14+)
-- MongoDB (v4+)
+- MySQL/MariaDB (v5.7+/v10.3+)
 - npm 或 yarn
 
-### 安装前端
+### 1. 克隆与准备
 
 1. 克隆项目仓库
    ```bash
@@ -89,212 +111,249 @@ bio-vocab-app/
    cd bio-vocab-app
    ```
 
-2. 安装依赖
+2. 安装前端依赖
    ```bash
    npm install
    ```
 
-3. 配置环境变量
-   - 复制`.env.example`为`.env.local`
-   - 根据需要修改相关配置
+### 2. 数据库配置
 
-4. 启动开发服务器
-   ```bash
-   npm run dev
+1. 创建MySQL/MariaDB数据库
+   ```sql
+   CREATE DATABASE biovocab CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-### 安装后端
-
-1. 进入API目录
+2. 配置数据库连接
    ```bash
    cd bio-vocab-api
+   cp .env.sample .env
    ```
 
-2. 安装依赖
+3. 编辑`.env`文件配置数据库连接信息
+   ```
+   PORT=5001
+   NODE_ENV=development
+   
+   # MySQL/MariaDB数据库配置
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_NAME=biovocab
+   DB_USER=your_db_username
+   DB_PASSWORD=your_db_password
+   
+   # JWT配置
+   JWT_SECRET=your_custom_jwt_secret_key
+   
+   # 文件上传路径
+   UPLOAD_PATH=uploads
+   ```
+
+### 3. 后端API设置
+
+1. 安装后端依赖
    ```bash
+   cd bio-vocab-api
    npm install
    ```
 
-3. 配置环境变量
-   - 复制`.env.example`为`.env`
-   - 设置MongoDB连接URL和JWT密钥
-   ```
-   PORT=5000
-   MONGO_URI=mongodb://localhost:27017/biovocab
-   JWT_SECRET=your_secret_key
-   NODE_ENV=development
-   ```
-
-4. 创建uploads目录
+2. 创建上传目录
    ```bash
    mkdir -p uploads
    ```
 
-### 初始化数据库
-
-1. 创建管理员账户
+3. 初始化数据库表结构并创建管理员账户
    ```bash
-   cd bio-vocab-api
-   node createAdmin.js
+   npm run db:create   # 创建数据库（如果尚未创建）
+   npm run db:migrate  # 应用数据库迁移
+   npm run db:seed     # 创建基础数据
+   npm run admin:create  # 创建管理员账户
    ```
    这将创建一个管理员账户:
    - 邮箱: admin@biovocab.com
    - 密码: admin123
 
-2. 导入生物词汇数据
+4. 导入生物词汇数据
    ```bash
-   cd bio-vocab-api
-   node importVocabulary.js
+   npm run import:vocab
    ```
+   或者使用完整的清空并导入命令:
+   ```bash
+   node scripts/importVocabulary.js --clear-all
+   ```
+   
    该脚本将:
    - 从项目根目录的`bio_vocab_list.csv`文件导入词汇
    - 自动创建模块和分类
    - 导入所有词汇条目到数据库
    - 显示导入统计信息
-   
-   注意：此脚本会添加或更新词汇，但不会删除现有数据。
 
-3. 清空并重新导入词汇数据
+### 4. 前端配置
+
+1. 返回到项目根目录
+   ```bash
+   cd ..
+   ```
+
+2. 创建前端环境变量文件
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+3. 编辑`.env.local`文件，设置API地址
+   ```
+   VITE_API_URL=http://localhost:5001/api
+   ```
+
+### 5. 启动服务
+
+1. 启动后端API服务器(在一个终端窗口)
    ```bash
    cd bio-vocab-api
-   node importVocabulary.js --clear-all
-   ```
-   该脚本使用`--clear-all`参数将:
-   - 删除不在CSV文件中的所有模块及其词汇
-   - 清空CSV文件中存在的模块的词汇，以便重新导入
-   - 从CSV文件导入全新词汇，并避免重复
-   - 自动更新模块的词汇计数
-   - 显示详细的导入统计信息
-
-4. 修复模块名称格式（在导入后运行）
-   ```bash
-   cd bio-vocab-api
-   node fixModuleNames.js
-   ```
-   该脚本将:
-   - 将"Unit X: Subject"格式的模块名称转换为前端界面兼容的简短名称
-   - 保持模块ID不变，确保关联的词汇条目保持连接
-   - 在导入词汇后需要运行此脚本，以确保前端界面正确显示模块
-
-5. 启动API服务器
-   ```bash
    npm run dev
    ```
 
-### 生产环境部署
+2. 启动前端开发服务器(在另一个终端窗口)
+   ```bash
+   # 在项目根目录
+   npm run dev
+   ```
+
+3. 访问应用
+   - 前端: http://localhost:3000 (或Vite提供的URL)
+   - 后端API: http://localhost:5001/api
+
+### 6. 生产环境部署
 
 1. 构建前端
    ```bash
    # 在项目根目录
    npm run build
    ```
-
-2. 部署后端
-   ```bash
-   cd bio-vocab-api
-   npm install --production
-   npm start
+   
+2. 配置生产环境变量
+   在`bio-vocab-api/.env`文件中设置:
+   ```
+   NODE_ENV=production
    ```
 
-## 使用说明
+3. 使用PM2或类似工具部署后端
+   ```bash
+   cd bio-vocab-api
+   npm install pm2 -g
+   pm2 start server.js --name "bio-vocab-api"
+   ```
 
-### 管理员账户
+4. 使用Nginx或类似的Web服务器部署前端
+   ```nginx
+   # Nginx配置示例
+   server {
+     listen 80;
+     server_name yourdomain.com;
+     
+     location / {
+       root /path/to/bio-vocab-app/dist;
+       index index.html;
+       try_files $uri $uri/ /index.html;
+     }
+     
+     location /api {
+       proxy_pass http://localhost:5001;
+       proxy_http_version 1.1;
+       proxy_set_header Upgrade $http_upgrade;
+       proxy_set_header Connection 'upgrade';
+       proxy_set_header Host $host;
+       proxy_cache_bypass $http_upgrade;
+     }
+   }
+   ```
 
-初始管理员账户:
-- 邮箱: admin@biovocab.com
-- 密码: admin123
+## API 参考
 
-管理员可以:
-- 管理用户账户
-- 创建和编辑词汇模块
-- 添加和修改词汇条目
-- 导入/导出词汇数据
-- 查看学习统计和报告
+### 用户相关
 
-### 测验功能
+- `POST /api/auth/login` - 用户登录
+- `GET /api/users/me` - 获取当前用户信息
+- `GET /api/users/dashboard/stats` - 获取管理员仪表盘统计数据
 
-系统提供两种测验模式:
+### 模块相关
 
-1. **单模块测验**
-   - 针对特定模块的词汇进行测试
-   - 选择题形式
-   - 计时答题
-   - 结果统计和反馈
+- `GET /api/modules` - 获取所有模块(包含词汇数量)
+- `GET /api/modules/:id` - 获取特定模块信息
+- `GET /api/modules/:id/terms` - 获取模块的所有词汇
 
-2. **综合测验**
-   - 可选择多个模块进行组合测试
-   - 支持选择题和拼写题两种题型
-   - 支持英文→中文和中文→英文双向测试
-   - 可设置测验难度、题目数量和是否随机排序
-   - 详细的结果分析和错题复习列表
-   - 按模块记录学习进度
+### 学习进度相关
 
-### 词汇导入格式
+- `GET /api/progress` - 获取用户学习进度
+- `PUT /api/progress/module/:moduleId` - 更新特定模块的学习进度
 
-CSV文件格式应包含以下列:
-- 英文单词名: 英文词汇
-- 中文单词名: 中文翻译
-- 单词中文描述: 定义
-- 所属单元: 模块名称(如"Unit 1: Cell Biology")
-- 单词重要等级: 重要程度(高/中/低)
+## 更新记录
 
-## 管理员账户维护
+### 2023年Q3更新
+- 添加用户统计功能：连续学习天数计算
+- 添加词汇模块的词汇数量显示
+- 添加管理员仪表盘统计功能
+- 改进用户个人资料页面，显示更多学习统计
 
-如果遇到管理员账户的登录问题，可以使用以下脚本进行维护：
+## 常见问题排查
 
-### 解锁管理员账户
+### 模块导入后前端显示"No data available"
 
-当登录失败次数过多（默认5次）时，账户会被自动锁定。使用以下命令解锁：
+如果在管理页面的词汇管理没有显示任何模块，可能是因为:
 
-```bash
-cd bio-vocab-api
-node unlockAdmin.js
-```
+1. 检查导入状态
+   ```bash
+   cd bio-vocab-api
+   node debug-modules.js
+   ```
+   这将显示数据库中的模块情况
 
-### 重置管理员密码
+2. 如导入失败，检查错误信息并重新导入
+   ```bash
+   node scripts/importVocabulary.js --clear-all
+   ```
 
-如果忘记密码或密码验证持续失败，可以使用以下命令重置密码：
+3. 确认API服务正常运行
+   创建一个测试脚本:
+   ```bash
+   node test-api.js
+   ```
+   如有问题，检查API响应和错误日志
 
-```bash
-cd bio-vocab-api
-node resetAdminPassword.js
-```
+4. 检查前端API连接配置
+   确认`.env.local`中的`VITE_API_URL`设置正确
 
-这将把管理员密码重置为默认值：`admin123`
+### 其他常见问题解决方案
 
-## 开发者文档
+1. 管理员账户解锁
+   当登录失败次数过多（默认5次）时，账户会被自动锁定。使用以下命令解锁：
+   ```bash
+   cd bio-vocab-api
+   npm run admin:unlock
+   ```
 
-### API端点
+2. 重置管理员密码
+   如果忘记密码或密码验证持续失败，可以使用以下命令重置密码：
+   ```bash
+   cd bio-vocab-api
+   npm run admin:reset-password
+   ```
+   这将把管理员密码重置为默认值：`admin123`
 
-API端点详情请参阅 `/bio-vocab-api/routes/` 目录下的路由文件:
-- `/api/auth`: 认证相关
+3. 学习进度未正确记录
+   如果学习进度没有正确记录或显示，尝试以下步骤:
+   - 确保用户已登录
+   - 检查API服务器日志是否有错误信息
+   - 在控制台查看网络请求是否成功
+   - 重新启动前端和后端服务
+
+## API端点参考
+
+API端点详情:
+- `/api/auth`: 认证相关(登录、注册)
 - `/api/users`: 用户管理
 - `/api/modules`: 模块管理
-- `/api/vocabulary`: 词汇管理
-- `/api/terms`: 词条管理(兼容性API)
+- `/api/terms`: 词汇管理
 - `/api/progress`: 学习进度
-
-## 故障排除
-
-### 模块词汇计数显示为0
-
-如果模块词汇计数显示为0，可能是导入后没有正确更新计数值。解决方法:
-
-```bash
-cd bio-vocab-api
-node importVocabulary.js --clear-all
-```
-
-这将重新导入词汇并更新所有模块的词汇计数。
-
-### 学习进度未正确记录
-
-如果学习进度没有正确记录或显示，尝试以下步骤:
-
-1. 确保用户已登录
-2. 检查API服务器日志是否有错误信息
-3. 在控制台查看网络请求是否成功
-4. 重新启动前端和后端服务
 
 ## 许可证
 

@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 
 const routes = [
   {
@@ -94,11 +94,19 @@ const routes = [
         component: () => import('../views/admin/SystemLogs.vue'),
       }
     ]
-  }
+  },
+  {
+    path: '/study-direct/:moduleId/:termId',
+    name: 'study-direct',
+    component: () => import('../views/StudyView.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
+// 使用hashHistory模式 - 更兼容所有环境
 const router = createRouter({
-  history: createWebHistory(),
+  // 根据环境选择合适的历史模式
+  history: createWebHashHistory(),
   routes
 })
 
@@ -159,6 +167,12 @@ router.beforeEach((to, from, next) => {
       next()
     }
   }
+})
+
+// 添加路由调试信息
+router.afterEach((to, from) => {
+  console.log(`路由完成: 从 ${from.fullPath} 到 ${to.fullPath}`);
+  console.log('路由参数:', to.params);
 })
 
 export default router 

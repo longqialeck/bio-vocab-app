@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { User } = require('../models');
 
 // 保护路由 - 确保用户已登录
 exports.protect = async (req, res, next) => {
@@ -20,7 +20,9 @@ exports.protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // 获取用户信息
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findByPk(decoded.id, {
+      attributes: { exclude: ['password'] }
+    });
     
     if (!user) {
       return res.status(401).json({ message: '无效的token，用户不存在' });

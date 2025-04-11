@@ -76,25 +76,31 @@
     <q-card flat class="q-pa-md q-mt-lg">
       <div class="text-subtitle1 q-mb-md">学习统计</div>
       
-      <div class="row q-col-gutter-md">
+      <div class="row q-col-gutter-md q-mt-lg">
         <div class="col-4">
-          <q-card class="text-center q-pa-md">
-            <div class="text-h5">{{ stats.totalWords }}</div>
-            <div class="text-caption">已学单词</div>
+          <q-card class="stats-card">
+            <q-card-section class="text-center">
+              <div class="text-h1">{{ progress.wordsLearned }}</div>
+              <div class="text-subtitle1">已学单词</div>
+            </q-card-section>
           </q-card>
         </div>
         
         <div class="col-4">
-          <q-card class="text-center q-pa-md">
-            <div class="text-h5">{{ stats.streak }}</div>
-            <div class="text-caption">连续学习天数</div>
+          <q-card class="stats-card">
+            <q-card-section class="text-center">
+              <div class="text-h1">{{ progress.streak }}</div>
+              <div class="text-subtitle1">连续学习天数</div>
+            </q-card-section>
           </q-card>
         </div>
         
         <div class="col-4">
-          <q-card class="text-center q-pa-md">
-            <div class="text-h5">{{ stats.quizzes }}</div>
-            <div class="text-caption">测验完成数</div>
+          <q-card class="stats-card">
+            <q-card-section class="text-center">
+              <div class="text-h1">{{ progress.quizCompletion }}</div>
+              <div class="text-subtitle1">测验完成数</div>
+            </q-card-section>
           </q-card>
         </div>
       </div>
@@ -141,6 +147,9 @@ export default defineComponent({
     const $q = useQuasar()
     const router = useRouter()
     
+    const user = computed(() => userStore.getUser)
+    const progress = computed(() => userStore.getProgress)
+    
     const userForm = ref({
       name: '',
       email: '',
@@ -148,12 +157,6 @@ export default defineComponent({
       currentPassword: '',
       newPassword: '',
       confirmPassword: ''
-    })
-    
-    const stats = ref({
-      totalWords: 0,
-      streak: 0,
-      quizzes: 0
     })
     
     const logoutDialog = ref(false)
@@ -172,20 +175,14 @@ export default defineComponent({
     
     onMounted(() => {
       // 加载用户数据
-      const user = userStore.getUser
-      if (user) {
-        userForm.value.name = user.name || ''
-        userForm.value.email = user.email || ''
-        userForm.value.grade = user.grade || null
+      if (user.value) {
+        userForm.value.name = user.value.name || ''
+        userForm.value.email = user.value.email || ''
+        userForm.value.grade = user.value.grade || null
       }
       
       // 加载统计数据
-      const progress = userStore.getProgress
-      if (progress) {
-        stats.value.totalWords = progress.wordsLearned || 0
-        stats.value.streak = progress.streak || 0
-        stats.value.quizzes = progress.quizzes || 0
-      }
+      userStore.loadProgress()
     })
     
     const onSubmit = async () => {
@@ -244,8 +241,9 @@ export default defineComponent({
     }
     
     return {
+      user,
+      progress,
       userForm,
-      stats,
       gradeOptions,
       hasPasswordChanges,
       onSubmit,
