@@ -19,9 +19,8 @@
         :rules="[val => !!val || 'Password is required']"
       />
       
-      <div class="row justify-between items-center q-mb-md">
+      <div class="q-mb-md">
         <q-checkbox v-model="rememberMe" label="Remember me" />
-        <q-btn flat dense color="primary" label="Forgot Password?" />
       </div>
       
       <q-btn
@@ -32,17 +31,6 @@
         :loading="loading"
       />
     </q-form>
-    
-    <div class="q-mt-lg">
-      <div class="row justify-center q-mb-sm">
-        <div class="text-subtitle2 text-grey">Or login with</div>
-      </div>
-      
-      <div class="row q-gutter-md">
-        <q-btn outline color="red" icon="img:https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" @click="thirdPartyLogin('google')" />
-        <q-btn outline color="black" icon="img:https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" @click="thirdPartyLogin('apple')" />
-      </div>
-    </div>
     
     <div class="q-mt-xl">
       <q-btn flat color="grey" label="管理员登录" size="sm" @click="showAdminLoginDialog" />
@@ -89,7 +77,6 @@ import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import DnaLogo from '../components/DnaLogo.vue'
-import wechatService from '../services/wechatService'
 import { useQuasar } from 'quasar'
 import api from '../services/api'
 
@@ -118,7 +105,7 @@ export default defineComponent({
       loading.value = true
       
       try {
-        console.log('尝试登录:', { email: email.value, password: password.value })
+        console.log('尝试登录:', { email: email.value, password: password.value, rememberMe: rememberMe.value })
         // 使用API进行登录
         const response = await api.post('/auth/login', {
           email: email.value,
@@ -127,8 +114,17 @@ export default defineComponent({
         
         if (response.data && response.data.token) {
           console.log('登录成功:', response.data)
-          // 存储token和用户信息
-          localStorage.setItem('token', response.data.token);
+          
+          // 根据"记住我"选项决定存储位置
+          if (rememberMe.value) {
+            // 使用localStorage，关闭浏览器后仍然保留
+            localStorage.setItem('token', response.data.token);
+          } else {
+            // 使用sessionStorage，关闭浏览器后清除
+            sessionStorage.setItem('token', response.data.token);
+            localStorage.removeItem('token'); // 确保移除可能存在的localStorage中的token
+          }
+          
           userStore.setUser(response.data.user);
           router.push({ name: 'dashboard' });
         }
@@ -141,33 +137,6 @@ export default defineComponent({
         });
       } finally {
         loading.value = false;
-      }
-    }
-    
-    const thirdPartyLogin = async (provider) => {
-      loading.value = true
-      
-      if (provider === 'wechat') {
-        await wechatService.initialize()
-        const result = await wechatService.requestLogin()
-        
-        if (result.success) {
-          userStore.setUser(result.user)
-          router.push({ name: 'dashboard' })
-        }
-      } else {
-        // 目前仍使用模拟登录，第三方登录需要实际集成
-        setTimeout(() => {
-          userStore.setUser({
-            id: `${provider}_${Math.floor(Math.random() * 1000000)}`,
-            name: 'Emily',
-            email: `emily@${provider}.com`,
-            gradeLevel: '10'
-          })
-          
-          loading.value = false
-          router.push({ name: 'dashboard' })
-        }, 1000)
       }
     }
     
@@ -206,7 +175,7 @@ export default defineComponent({
         
         // 检查是否为管理员
         if (response.data.user.isAdmin) {
-          // 先存储token
+          // 管理员登录始终使用localStorage保存token
           localStorage.setItem('token', response.data.token);
           
           // 然后通过store设置用户信息
@@ -254,7 +223,6 @@ export default defineComponent({
       rememberMe,
       loading,
       onSubmit,
-      thirdPartyLogin,
       adminLoginDialog,
       adminEmail,
       adminPassword,
