@@ -1,94 +1,628 @@
-英文单词名,中文单词名,单词中文描述,所属单元,单词重要等级
-cell,细胞,生物体的基本结构和功能单位,Unit 1: Cell Biology,高
-nucleus,细胞核,包含遗传物质DNA的控制中心,Unit 1: Cell Biology,高
-cytoplasm,细胞质,细胞内胶状物质，容纳细胞器,Unit 1: Cell Biology,中
-cell membrane,细胞膜,控制物质进出细胞的半透膜,Unit 1: Cell Biology,高
-mitochondria,线粒体,进行细胞呼吸并产生能量的细胞器,Unit 1: Cell Biology,高
-vacuole,液泡,储存水、营养物质或废物的囊状结构（植物细胞较大）,Unit 1: Cell Biology,中
-chloroplast,叶绿体,植物细胞中进行光合作用的场所（含叶绿素）,Unit 1: Cell Biology,高
-cell wall,细胞壁,植物细胞外层的支持和保护结构（主要成分为纤维素）,Unit 1: Cell Biology,中
-tissue,组织,由相似细胞组成的功能群体（如肌肉组织、上皮组织）,Unit 2: Organization of Organisms,中
-organ,器官,由多种组织构成的执行特定功能的结构（如心脏、肝脏）,Unit 2: Organization of Organisms,中
-system,系统,由多个器官协同工作组成的功能整体（如消化系统、循环系统）,Unit 2: Organization of Organisms,高
-digestive system,消化系统,负责食物分解和吸收的器官系统,Unit 2: Organization of Organisms,高
-circulatory system,循环系统,运输血液、氧气和营养物质的系统,Unit 2: Organization of Organisms,高
-osmosis,渗透作用,水分子通过半透膜的扩散现象（从低浓度到高浓度）,Unit 3: Movement into and out of Cells,高
-diffusion,扩散,物质从高浓度区域向低浓度区域的被动运输,Unit 3: Movement into and out of Cells,高
-active transport,主动运输,需要能量的物质跨膜运输（逆浓度梯度）,Unit 3: Movement into and out of Cells,高
-glucose,葡萄糖,细胞呼吸的主要能源物质（单糖）,Unit 4: Biological Molecules,高
-starch,淀粉,植物储存能量的多糖（遇碘变蓝）,Unit 4: Biological Molecules,高
-glycogen,糖原,动物体内储存能量的多糖（主要在肝脏和肌肉）,Unit 4: Biological Molecules,中
-lipid,脂质,包括脂肪、磷脂和固醇，储存能量并构成膜结构,Unit 4: Biological Molecules,高
-protein,蛋白质,由氨基酸组成的生物大分子，参与结构和酶功能,Unit 4: Biological Molecules,高
-amino acid,氨基酸,蛋白质的基本组成单位（共20种）,Unit 4: Biological Molecules,中
-enzyme,酶,生物催化剂，加速化学反应（通常为蛋白质）,Unit 5: Enzymes,高
-substrate,底物,酶作用的特定物质（如淀粉酶作用于淀粉）,Unit 5: Enzymes,中
-active site,活性位点,酶分子上与底物结合的特定区域,Unit 5: Enzymes,中
-denaturation,变性,高温或pH变化导致酶结构破坏并失去功能,Unit 5: Enzymes,高
-photosynthesis,光合作用,植物利用光能将二氧化碳和水转化为葡萄糖和氧气的过程,Unit 6: Plant Physiology,高
-chlorophyll,叶绿素,叶绿体中捕获光能的绿色色素,Unit 6: Plant Physiology,高
-stomata,气孔,叶片表面控制气体交换和水分散失的小孔（由保卫细胞控制）,Unit 6: Plant Physiology,中
-transpiration,蒸腾作用,植物通过叶片气孔散失水分的过程,Unit 6: Plant Physiology,中
-respiration,呼吸作用,细胞将葡萄糖分解为能量（ATP）的过程,Unit 7: Human Physiology,高
-aerobic respiration,有氧呼吸,需要氧气参与的呼吸作用（产生大量ATP）,Unit 7: Human Physiology,高
-anaerobic respiration,无氧呼吸,无需氧气的呼吸作用（产生少量ATP，如肌肉疲劳时）,Unit 7: Human Physiology,中
-glucose,葡萄糖,呼吸作用的主要底物,Unit 7: Human Physiology,高
-ATP,三磷酸腺苷,细胞内的直接能量货币,Unit 7: Human Physiology,高
-heart,心脏,循环系统的肌肉泵，推动血液流动,Unit 7: Human Physiology,高
-artery,动脉,将血液从心脏输送到身体各部分的血管（壁厚、弹性大）,Unit 7: Human Physiology,中
-vein,静脉,将血液带回心脏的血管（壁薄、含瓣膜）,Unit 7: Human Physiology,中
-capillary,毛细血管,连接动脉和静脉的微小血管，物质交换场所,Unit 7: Human Physiology,中
-lung,肺,呼吸系统的主要器官，进行气体交换,Unit 7: Human Physiology,高
-trachea,气管,连接喉和支气管的呼吸管道（含软骨环）,Unit 7: Human Physiology,中
-bronchus,支气管,气管分支进入肺部的管道,Unit 7: Human Physiology,中
-alveoli,肺泡,肺部微小气囊，气体交换的场所（表面积大）,Unit 7: Human Physiology,高
-kidney,肾脏,排泄系统的主要器官，过滤血液形成尿液,Unit 7: Human Physiology,高
-ureter,输尿管,将尿液从肾脏输送到膀胱的管道,Unit 7: Human Physiology,中
-bladder,膀胱,储存尿液的肌肉囊,Unit 7: Human Physiology,中
-neurone,神经元,神经系统的基本单位，传递电信号,Unit 8: Coordination and Response,高
-synapse,突触,神经元之间的连接间隙，通过神经递质传递信号,Unit 8: Coordination and Response,中
-reflex,反射,快速、自动的反应（如眨眼反射，无需大脑参与）,Unit 8: Coordination and Response,高
-hormone,激素,由内分泌腺分泌的化学信使（如胰岛素、肾上腺素）,Unit 8: Coordination and Response,高
-pancreas,胰腺,分泌胰岛素调节血糖水平的腺体,Unit 8: Coordination and Response,高
-ovary,卵巢,女性生殖器官，产生卵细胞和雌性激素,Unit 9: Reproduction,高
-testis,睾丸,男性生殖器官，产生精子和雄性激素,Unit 9: Reproduction,高
-sperm,精子,男性生殖细胞（单细胞，有尾能游动）,Unit 9: Reproduction,高
-egg,卵细胞,女性生殖细胞（含丰富营养物质）,Unit 9: Reproduction,高
-fertilization,受精,精子与卵细胞结合形成受精卵的过程,Unit 9: Reproduction,高
-zygote,受精卵,受精后的细胞（ diploid，含成对染色体）,Unit 9: Reproduction,高
-embryo,胚胎,受精卵发育的早期阶段（在子宫内着床）,Unit 9: Reproduction,中
-menstruation,月经,女性周期性子宫内膜脱落和出血的过程,Unit 9: Reproduction,中
-chromosome,染色体,细胞核内由DNA和蛋白质组成的结构（人类有23对）,Unit 10: Genetics,高
-DNA,脱氧核糖核酸,携带遗传信息的双螺旋分子,Unit 10: Genetics,高
-gene,基因,DNA上的功能片段，控制性状（如眼睛颜色）,Unit 10: Genetics,高
-allele,等位基因,同一基因的不同形式（如显性和隐性等位基因）,Unit 10: Genetics,高
-dominant,显性,在杂合子中表现出的性状（用大写字母表示，如A）,Unit 10: Genetics,高
-recessive,隐性,在杂合子中被掩盖的性状（用小写字母表示，如a）,Unit 10: Genetics,高
-homozygous,纯合子,具有两个相同等位基因的个体（如AA或aa）,Unit 10: Genetics,中
-heterozygous,杂合子,具有两个不同等位基因的个体（如Aa）,Unit 10: Genetics,中
-phenotype,表现型,个体可见的性状（如棕色眼睛）,Unit 10: Genetics,中
-genotype,基因型,个体的基因组成（如AA、Aa、aa）,Unit 10: Genetics,中
-mutation,突变,DNA序列的永久性改变（可能导致新性状）,Unit 10: Genetics,高
-evolution,进化,物种随时间逐渐变化的过程（通过自然选择）,Unit 11: Evolution and Biodiversity,高
-natural selection,自然选择,适者生存的过程（达尔文提出）,Unit 11: Evolution and Biodiversity,高
-species,物种,能够相互交配并产生可育后代的生物群体,Unit 11: Evolution and Biodiversity,高
-biodiversity,生物多样性,地球上所有生物及其生态系统的多样性,Unit 11: Evolution and Biodiversity,高
-habitat,栖息地,生物生活的具体环境（如森林、草原）,Unit 12: Ecology,中
-population,种群,同一物种在同一区域内的所有个体,Unit 12: Ecology,中
-community,群落,同一区域内所有不同物种的集合,Unit 12: Ecology,中
-ecosystem,生态系统,生物群落与其物理环境的相互作用整体,Unit 12: Ecology,高
-producer,生产者,通过光合作用制造有机物的生物（如植物）,Unit 12: Ecology,高
-consumer,消费者,依赖其他生物获取能量的生物（如动物）,Unit 12: Ecology,高
-decomposer,分解者,分解有机物并回收养分的生物（如真菌、细菌）,Unit 12: Ecology,高
-food chain,食物链,生物之间的能量传递链（如草→兔→鹰）,Unit 12: Ecology,中
-food web,食物网,多个食物链交织形成的复杂网络,Unit 12: Ecology,中
-carbon cycle,碳循环,碳在生物和环境之间的循环（如光合作用、呼吸作用）,Unit 12: Ecology,高
-nitrogen cycle,氮循环,氮在大气、土壤和生物之间的转化过程,Unit 12: Ecology,中
-pollution,污染,有害物质进入环境导致生态破坏（如水污染、空气污染）,Unit 13: Human Impact on the Environment,高
-deforestation,森林砍伐,大面积森林被破坏（导致水土流失和气候变化）,Unit 13: Human Impact on the Environment,高
-global warming,全球变暖,由于温室气体排放导致的地球温度上升,Unit 13: Human Impact on the Environment,高
-biotechnology,生物技术,利用生物系统或生物体进行技术开发（如基因工程）,Unit 14: Biotechnology and Genetic Engineering,高
-fermentation,发酵,微生物在无氧条件下分解有机物的过程（如酿酒、制酸奶）,Unit 14: Biotechnology and Genetic Engineering,中
-genetic engineering,基因工程,人工修改生物体DNA的技术（如转基因作物）,Unit 14: Biotechnology and Genetic Engineering,高
-culture medium,培养基,用于培养微生物的营养物质（如琼脂）,Unit 14: Biotechnology and Genetic Engineering,中
-antibiotic,抗生素,抑制或杀死细菌的药物（如青霉素）,Unit 14: Biotechnology and Genetic Engineering,高
+英文单词名,中文单词名,单词中文描述,所属单元,单词难度等级
+maintenance,维护,对系统、设备或生物结构的保养与维持,Chapter 0 基础词汇,中
+constant,常量；持续的,固定不变的量或持续存在的状态,Chapter 0 基础词汇,中
+concept,概念,对事物或现象的抽象理解与定义,Chapter 0 基础词汇,低
+reference,参考；参照,用于对比或解释的依据或标准,Chapter 0 基础词汇,中
+describe,描述,用语言表达事物的特征或性质,Chapter 0 基础词汇,低
+state,陈述；说明,明确表达观点或事实,Chapter 0 基础词汇,低
+explain,解释,阐明事物的原因或机制,Chapter 0 基础词汇,低
+identify,识别；鉴定,确定事物的种类或特性,Chapter 0 基础词汇,中
+diagram,图表；示意图,用图形表示结构或过程,Chapter 0 基础词汇,中
+image,图像；影像,视觉上的表现或记录,Chapter 0 基础词汇,中
+treatment,处理；治疗,对问题或疾病的解决方法,Chapter 0 基础词汇,中
+Organism,生物,具有生命特征的个体或实体,Chapter 1 Introduction of living organisms,低
+Eukaryotes,真核生物,细胞具有细胞核的生物类群（如动植物）,Chapter 1 Introduction of living organisms,中
+Prokaryote,原核生物,细胞无细胞核的单细胞生物（如细菌）,Chapter 1 Introduction of living organisms,中
+Cell wall,细胞壁,位于细胞外层的支持性结构（植物细胞主要成分为纤维素）,Chapter 1 Introduction of living organisms,中
+Cell membrane,细胞膜,控制物质进出细胞的半透性屏障,Chapter 1 Introduction of living organisms,中
+Organelle,细胞器,细胞内具有特定功能的结构（如线粒体、叶绿体）,Chapter 1 Introduction of living organisms,中
+Nucleus,细胞核,包含遗传物质（DNA）的细胞控制中心,Chapter 1 Introduction of living organisms,中
+Cytoplasm,细胞质,细胞内胶状物质，容纳细胞器,Chapter 1 Introduction of living organisms,中
+Vacuole,液泡,储存液体或物质的囊状结构（植物细胞液泡较大）,Chapter 1 Introduction of living organisms,中
+Vesicle,小泡/囊,细胞内运输或储存物质的小膜泡,Chapter 1 Introduction of living organisms,高
+cell sap,细胞液,液泡内的水溶液，含糖类、无机盐等,Chapter 1 Introduction of living organisms,高
+Cristae,嵴,线粒体内膜折叠形成的结构，增加呼吸酶附着面积,Chapter 1 Introduction of living organisms,高
+Ribosome,核糖体,合成蛋白质的细胞器（游离或附着于内质网）,Chapter 1 Introduction of living organisms,中
+Mitochondria,线粒体,通过细胞呼吸产生能量（ATP）的细胞器,Chapter 1 Introduction of living organisms,中
+Chloroplast,叶绿体,植物细胞中进行光合作用的场所（含叶绿素）,Chapter 1 Introduction of living organisms,中
+chlorophyll,叶绿素,捕获光能的绿色色素（存在于叶绿体中）,Chapter 1 Introduction of living organisms,中
+endoplasmic reticulum,内质网,细胞内物质运输的膜性网络（分为粗面和光面）,Chapter 1 Introduction of living organisms,中
+rough endoplasmic reticulum,粗面内质网,附着核糖体的内质网，参与蛋白质合成,Chapter 1 Introduction of living organisms,高
+chromosome,染色体,由DNA和蛋白质组成的遗传物质载体,Chapter 1 Introduction of living organisms,中
+glycogen,糖原,动物体内储存能量的多糖（主要存在于肝脏和肌肉）,Chapter 1 Introduction of living organisms,中
+Peptidoglycan,肽聚糖,细菌细胞壁的主要成分（由肽和糖组成）,Chapter 1 Introduction of living organisms,高
+polysaccharide,多糖,由多个单糖分子组成的碳水化合物（如淀粉、纤维素）,Chapter 1 Introduction of living organisms,中
+Electron microscope,电子显微镜,利用电子束成像的高分辨率显微镜,Chapter 1 Introduction of living organisms,中
+electron micrograph,电子显微照片,电子显微镜下拍摄的图像,Chapter 1 Introduction of living organisms,高
+millimeter,毫米,长度单位（mm，1毫米=0.001米）,Chapter 1 Introduction of living organisms,低
+micrometers,微米,长度单位（μm，1微米=0.000001米）,Chapter 1 Introduction of living organisms,低
+turgor pressure,膨胀压力,植物细胞因吸水产生的细胞壁压力,Chapter 1 Introduction of living organisms,高
+Cellulose,纤维素,植物细胞壁的主要结构多糖,Chapter 1 Introduction of living organisms,中
+partially permeable,半透性,允许特定物质通过的膜特性,Chapter 1 Introduction of living organisms,中
+diffusion,扩散,物质从高浓度区域向低浓度区域的自发移动,Chapter 2 Move in and out of cells,中
+osmosis,渗透作用,水分子通过半透膜的扩散（顺水势梯度）,Chapter 2 Move in and out of cells,中
+active transport,主动运输,需要能量（ATP）的逆浓度梯度物质运输,Chapter 2 Move in and out of cells,中
+Dialysis,透析,通过半透膜分离不同分子量物质的过程,Chapter 2 Move in and out of cells,高
+kinetic energy,动能,物体运动所具有的能量,Chapter 2 Move in and out of cells,低
+solute,溶质,溶液中被溶解的物质（如糖、盐）,Chapter 2 Move in and out of cells,低
+solvent,溶剂,溶解溶质的液体（如水）,Chapter 2 Move in and out of cells,低
+solution,溶液,溶质溶解于溶剂形成的均匀混合物,Chapter 2 Move in and out of cells,低
+scent,气味,挥发性物质产生的嗅觉信号,Chapter 2 Move in and out of cells,低
+visking tubing,半透膜,实验室用人工半透膜（模拟细胞膜功能）,Chapter 2 Move in and out of cells,高
+partially permeable membrane,半透膜,只允许部分物质通过的膜,Chapter 2 Move in and out of cells,中
+fully permeable,全透性的,允许所有物质自由通过的膜特性,Chapter 2 Move in and out of cells,高
+dilute,稀释,降低溶液浓度的过程（如加水）,Chapter 2 Move in and out of cells,低
+swell,膨胀,细胞或物体吸水后体积增大,Chapter 2 Move in and out of cells,低
+burst,爆发，爆裂,细胞因过度吸水而破裂,Chapter 2 Move in and out of cells,低
+shrink,收缩,细胞因失水而体积缩小,Chapter 2 Move in and out of cells,低
+turgid,浮肿的,植物细胞吸水后饱满坚硬的状态,Chapter 2 Move in and out of cells,高
+turgor,肿胀,细胞内液体产生的膨胀压力,Chapter 2 Move in and out of cells,高
+elastic,有弹性的,物体变形后恢复原状的能力,Chapter 2 Move in and out of cells,低
+inelastic,缺乏弹性的,物体变形后难以恢复原状的特性,Chapter 2 Move in and out of cells,高
+concentration gradient,浓度梯度,溶液中物质浓度的空间差异,Chapter 2 Move in and out of cells,中
+dependent variable,因变量,实验中随自变量变化而变化的变量,Chapter 2 Move in and out of cells,中
+independent variable,自变量,实验中被操纵或改变的变量,Chapter 2 Move in and out of cells,中
+net movement,净移动,物质在扩散或渗透中的总体移动方向,Chapter 2 Move in and out of cells,中
+water potential gradient,水势梯度,不同区域间水势的差异（水从高水势流向低水势）,Chapter 2 Move in and out of cells,高
+high water potential,高水势,溶液中水分子自由能较高的状态（纯水水势最高）,Chapter 2 Move in and out of cells,高
+low water potential,低水势,溶液中水分子自由能较低的状态（含溶质越多水势越低）,Chapter 2 Move in and out of cells,高
+carrier proteins,载体蛋白,细胞膜上协助物质运输的蛋白质（参与主动运输或协助扩散）,Chapter 2 Move in and out of cells,中
+plasmolysed,质壁分离的,植物细胞因失水导致细胞膜与细胞壁分离的状态,Chapter 2 Move in and out of cells,高
+metabolic reaction,代谢反应,生物体内发生的化学反应（包括合成与分解）,Chapter 3 Biological molecules,中
+protein,蛋白质,由氨基酸组成的生物大分子（参与结构、酶等功能）,Chapter 3 Biological molecules,中
+lipid,脂质,包括脂肪、磷脂、固醇的疏水性分子（储存能量、构成膜）,Chapter 3 Biological molecules,中
+fat,脂肪,由甘油和脂肪酸组成的储能脂质（固态）,Chapter 3 Biological molecules,中
+oils,油,液态的脂肪（如植物油脂）,Chapter 3 Biological molecules,中
+carbohydrate,碳水化合物,由碳、氢、氧组成的能源物质（如糖、淀粉）,Chapter 3 Biological molecules,中
+monosaccharide,单糖,不能再水解的简单糖（如葡萄糖、果糖）,Chapter 3 Biological molecules,中
+glucose,葡萄糖,细胞主要能源物质（单糖，C6H12O6）,Chapter 3 Biological molecules,低
+fructose,果糖,甜味单糖（存在于水果中）,Chapter 3 Biological molecules,低
+galactose,半乳糖,单糖（与葡萄糖结合形成乳糖）,Chapter 3 Biological molecules,高
+ribose,核糖,构成RNA的五碳糖,Chapter 3 Biological molecules,高
+deoxyribose,脱氧核糖,构成DNA的五碳糖（少一个氧原子）,Chapter 3 Biological molecules,高
+disaccharide,二糖,由两个单糖脱水缩合形成的糖（如蔗糖、麦芽糖）,Chapter 3 Biological molecules,中
+maltose,麦芽糖,二糖（两分子葡萄糖，存在于淀粉消化产物中）,Chapter 3 Biological molecules,中
+sucrose,蔗糖,二糖（葡萄糖+果糖，常见于植物汁液）,Chapter 3 Biological molecules,中
+lactose,乳糖,二糖（葡萄糖+半乳糖，存在于乳汁中）,Chapter 3 Biological molecules,高
+polysaccharide,多糖,由多个单糖聚合形成的高分子化合物（如淀粉、纤维素）,Chapter 3 Biological molecules,中
+glycogen,糖原,动物体内储存的多糖（分支结构，主要在肝脏和肌肉）,Chapter 3 Biological molecules,中
+cellulose,纤维素,植物细胞壁的结构多糖（葡萄糖聚合而成）,Chapter 3 Biological molecules,中
+starch,淀粉,植物储存的多糖（直链或支链结构，遇碘变蓝）,Chapter 3 Biological molecules,中
+reducing sugars,还原糖,具有还原性的糖（如葡萄糖、麦芽糖，可与本尼迪特试剂反应）,Chapter 3 Biological molecules,中
+base,碱基,核酸（DNA/RNA）的组成部分（如腺嘌呤、胸腺嘧啶）,Chapter 3 Biological molecules,高
+complementary base pairing,互补碱基配对,核酸中碱基的特异性结合（如A-T，C-G）,Chapter 3 Biological molecules,高
+nucleotides,核苷酸,核酸的基本单位（由碱基、五碳糖、磷酸组成）,Chapter 3 Biological molecules,高
+DNA,脱氧核糖核酸,携带遗传信息的双螺旋分子,Chapter 3 Biological molecules,中
+RNA,核糖核酸,参与蛋白质合成的单链分子（三种类型：mRNA、tRNA、rRNA）,Chapter 3 Biological molecules,中
+amino acids,氨基酸,蛋白质的基本组成单位（20种，含氨基和羧基）,Chapter 3 Biological molecules,中
+Iodine solution,碘液,用于检测淀粉的试剂（棕黄色，遇淀粉变蓝）,Chapter 3 Biological molecules,中
+orange-brown,黄棕色,碘液的颜色（未与淀粉反应时）,Chapter 3 Biological molecules,低
+water bath,水浴,实验室加热方法（均匀控温，如本尼迪特试剂检测）,Chapter 3 Biological molecules,低
+brick red,砖红色,本尼迪特试剂与还原糖反应的颜色,Chapter 3 Biological molecules,低
+benedict’s solution,本尼迪特试剂,检测还原糖的试剂（需水浴加热，生成砖红色沉淀）,Chapter 3 Biological molecules,中
+fatty acid,脂肪酸,脂肪的组成部分（长链碳氢化合物，分饱和与不饱和）,Chapter 3 Biological molecules,中
+Glycerol,甘油,脂肪的组成部分（三羟基醇）,Chapter 3 Biological molecules,中
+adipose tissue,脂肪组织,储存脂肪的结缔组织（具有保温、缓冲功能）,Chapter 3 Biological molecules,中
+insulation,绝缘,阻止热量或电流传递的特性（如脂肪组织的保温作用）,Chapter 3 Biological molecules,低
+emulsion,乳状液,油与水混合形成的不稳定混合物,Chapter 3 Biological molecules,高
+ethanol,酒精,乙醇（用于脂质检测的溶剂）,Chapter 3 Biological molecules,低
+droplet,微滴,液体形成的小颗粒（如脂质检测中的油滴）,Chapter 3 Biological molecules,低
+opaque,不透明,光线无法穿透的状态（如脂质乳化液）,Chapter 3 Biological molecules,低
+transparent,透明,光线可穿透的状态,Chapter 3 Biological molecules,低
+antibody,抗体,免疫系统产生的蛋白质（特异性结合抗原）,Chapter 3 Biological molecules,中
+enzyme,酶,生物催化剂（大多为蛋白质，加速化学反应）,Chapter 3 Biological molecules,中
+catalyst,催化剂,降低反应活化能的物质（自身不被消耗）,Chapter 3 Biological molecules,中
+hemoglobin,血红蛋白,红细胞中运输氧气的蛋白质（含亚铁离子）,Chapter 3 Biological molecules,中
+reagent,试剂,用于检测或反应的化学物质,Chapter 3 Biological molecules,低
+bond,键,原子间的相互作用力（如共价键、离子键）,Chapter 3 Biological molecules,中
+pathogen,病原体,引起疾病的微生物（如细菌、病毒）,Chapter 3 Biological molecules,中
+vitamin,维他命,维持生命必需的微量有机物质（如维生素C、D）,Chapter 3 Biological molecules,低
+biuret reagent,双缩脲试剂,检测蛋白质的试剂（与肽键反应呈紫色）,Chapter 3 Biological molecules,中
+DCPIP,二氯酚靛酚,检测维生素C的氧化还原指示剂（蓝色，被还原后褪色）,Chapter 3 Biological molecules,高
+potassium hydroxide solution,氢氧化钾溶液,强碱溶液（用于实验中的pH调节或反应）,Chapter 3 Biological molecules,高
+copper sulfate solution,硫酸铜溶液,含铜离子的溶液（双缩脲试剂成分之一）,Chapter 3 Biological molecules,高
+active site,活性位点,酶分子上与底物结合并催化反应的区域,Chapter 4 Enzymes,中
+complementary,互补的,结构或功能相互匹配（如酶与底物的结合）,Chapter 4 Enzymes,中
+enzyme–substrate complex,酶-底物复合物,酶与底物结合形成的中间产物,Chapter 4 Enzymes,高
+enzymes,酶,见前文描述,Chapter 4 Enzymes,中
+product,产物,化学反应的生成物质,Chapter 4 Enzymes,低
+specificity,特异性,酶仅作用于特定底物的特性,Chapter 4 Enzymes,中
+substrate,底物,酶催化反应的反应物,Chapter 4 Enzymes,中
+optimum,最优的,酶活性最高的条件（如温度、pH）,Chapter 4 Enzymes,中
+range,范围,酶保持活性的条件区间,Chapter 4 Enzymes,中
+catalyze,催化,加速化学反应的过程,Chapter 4 Enzymes,低
+catalase,过氧化氢酶,分解过氧化氢（H2O2）为水和氧气的酶,Chapter 4 Enzymes,高
+hydrogen peroxide,过氧化氢,强氧化性化合物（H2O2，酶实验常用底物）,Chapter 4 Enzymes,中
+carbohydrase,碳水化合物酶,分解碳水化合物的酶（如淀粉酶）,Chapter 4 Enzymes,高
+amylase,淀粉酶,分解淀粉为麦芽糖的酶,Chapter 4 Enzymes,中
+maltase,麦芽糖酶,分解麦芽糖为葡萄糖的酶,Chapter 4 Enzymes,高
+sucrase,蔗糖酶,分解蔗糖为葡萄糖和果糖的酶,Chapter 4 Enzymes,高
+protease,蛋白酶,分解蛋白质为氨基酸的酶,Chapter 4 Enzymes,中
+lipase,酯酶,分解脂肪为甘油和脂肪酸的酶,Chapter 4 Enzymes,中
+denaturation,变性,高温、极端pH等导致酶结构破坏的现象,Chapter 4 Enzymes,中
+denature,变性,使蛋白质或酶结构破坏的过程,Chapter 4 Enzymes,中
+denatured,变性的,结构已破坏的蛋白质或酶,Chapter 4 Enzymes,中
+pepsin,胃蛋白酶,胃中分解蛋白质的酶（最适pH为酸性）,Chapter 4 Enzymes,高
+acid,酸,pH小于7的物质（如盐酸、醋酸）,Chapter 4 Enzymes,低
+alkali,碱,pH大于7的物质（如氢氧化钠、氢氧化钾）,Chapter 4 Enzymes,低
+balanced diet,均衡营养/饮食,包含各类必需营养素的饮食,Chapter 5 Human nutrition,低
+Mechanical digestion,机械性消化,通过咀嚼、蠕动等物理方式分解食物,Chapter 5 Human nutrition,中
+Chemical digestion,化学性消化,通过酶的作用分解食物为小分子,Chapter 5 Human nutrition,中
+digestion,消化,将食物分解为可吸收小分子的过程,Chapter 5 Human nutrition,中
+absorption,吸收,营养物质通过消化道壁进入血液的过程,Chapter 5 Human nutrition,中
+enamel,珐琅质,牙齿表面的坚硬保护层（主要成分为矿物质）,Chapter 5 Human nutrition,高
+bile,胆汁,肝脏分泌的乳化脂肪的液体（储存在胆囊中）,Chapter 5 Human nutrition,中
+bile duct,胆管,输送胆汁从肝脏到十二指肠的管道,Chapter 5 Human nutrition,高
+duodenum,十二指肠,小肠起始段（接收胆汁和胰液）,Chapter 5 Human nutrition,高
+gall bladder,胆囊,储存胆汁的囊状器官,Chapter 5 Human nutrition,高
+pancreas,胰腺,分泌胰液（含消化酶）和激素（胰岛素、胰高血糖素）的器官,Chapter 5 Human nutrition,中
+salivary glands,唾液腺,分泌唾液（含淀粉酶）的腺体,Chapter 5 Human nutrition,中
+small intestine,小肠,消化和吸收的主要场所（分十二指肠、空肠、回肠）,Chapter 5 Human nutrition,中
+stomach,胃,储存和初步消化食物的器官（分泌胃酸和胃蛋白酶）,Chapter 5 Human nutrition,中
+villi,小肠绒毛,小肠内壁的指状突起，增加吸收面积,Chapter 5 Human nutrition,高
+tongue,舌头,协助咀嚼、吞咽和味觉感知的肌肉器官,Chapter 5 Human nutrition,低
+epiglottis,会厌,吞咽时防止食物进入气管的软骨结构,Chapter 5 Human nutrition,高
+oesophagus,食道,连接咽喉和胃的肌肉管道,Chapter 5 Human nutrition,中
+trachea,气管,连接喉和支气管的呼吸管道（含软骨环）,Chapter 5 Human nutrition,中
+sphincter muscle,括约肌,控制器官开口闭合的肌肉（如胃幽门括约肌）,Chapter 5 Human nutrition,高
+large intestine,大肠,吸收水分和形成粪便的肠道（分盲肠、结肠、直肠）,Chapter 5 Human nutrition,中
+liver,肝脏,人体最大的消化腺（分泌胆汁、代谢物质）,Chapter 5 Human nutrition,中
+pancreatic duct,胰腺管,输送胰液到十二指肠的管道,Chapter 5 Human nutrition,高
+ileum,回肠,小肠末端部分（主要负责吸收）,Chapter 5 Human nutrition,高
+colon,结肠,大肠主要部分（吸收水分、形成粪便）,Chapter 5 Human nutrition,高
+rectum,直肠,大肠末端，储存粪便直至排出,Chapter 5 Human nutrition,高
+caecum,盲肠,大肠起始处的盲囊（连接阑尾）,Chapter 5 Human nutrition,高
+appendix,阑尾,盲肠的管状突起（免疫相关功能）,Chapter 5 Human nutrition,高
+anus,肛门,消化道末端开口，排出粪便,Chapter 5 Human nutrition,低
+emulsification,乳化,将大脂肪颗粒分解为小液滴的过程（如胆汁的作用）,Chapter 5 Human nutrition,中
+insulin,胰岛素,胰腺分泌的降低血糖的激素,Chapter 5 Human nutrition,中
+glucagon,胰高血糖素,胰腺分泌的升高血糖的激素,Chapter 5 Human nutrition,中
+adrenaline,肾上腺素,肾上腺分泌的应激激素（提高代谢率）,Chapter 5 Human nutrition,中
+peristalsis,蠕动,消化道肌肉的波浪式收缩（推动食物前进）,Chapter 5 Human nutrition,中
+circulatory system,循环系统,运输血液、氧气、营养物质的系统,Chapter 6 Transport in animals,中
+single circulatory system,单循环系统,血液经心脏一次循环完成（如鱼类）,Chapter 6 Transport in animals,高
+double circulatory system,双循环系统,血液经心脏两次循环完成（如人类：体循环和肺循环）,Chapter 6 Transport in animals,中
+oxygenated blood,含氧血液,含高浓度氧气的血液（动脉血）,Chapter 6 Transport in animals,中
+deoxygenated blood,脱氧血液,含低浓度氧气的血液（静脉血）,Chapter 6 Transport in animals,中
+artery,动脉,将血液从心脏输送到身体各处的血管（壁厚、弹性大）,Chapter 6 Transport in animals,中
+vein,静脉,将血液从身体各处带回心脏的血管（壁薄、含瓣膜）,Chapter 6 Transport in animals,中
+atria,心房,心脏接收血液的腔室（左心房、右心房）,Chapter 6 Transport in animals,中
+ventricles,心室,心脏泵出血液的腔室（左心室、右心室）,Chapter 6 Transport in animals,中
+Septum,隔膜,分隔心脏左右腔的肌肉壁,Chapter 6 Transport in animals,高
+pulmonary veins,肺静脉,将含氧血液从肺部带回左心房的血管,Chapter 6 Transport in animals,高
+aorta,主动脉,人体最大的动脉，将血液从左心室输送到全身,Chapter 6 Transport in animals,中
+vena cava,上腔静脉,将身体上部脱氧血液带回右心房的大静脉,Chapter 6 Transport in animals,高
+pulmonary artery,肺动脉,将脱氧血液从右心室输送到肺部的动脉,Chapter 6 Transport in animals,高
+Bicuspid Valve,二尖瓣,左心房与左心室之间的瓣膜（防止血液逆流）,Chapter 6 Transport in animals,高
+Aortic Valve,主动脉瓣,左心室与主动脉之间的瓣膜,Chapter 6 Transport in animals,高
+Tricuspid Valve,三尖瓣,右心房与右心室之间的瓣膜,Chapter 6 Transport in animals,高
+Pulmonary Valve,肺动脉瓣,右心室与肺动脉之间的瓣膜,Chapter 6 Transport in animals,高
+haemoglobin,血红蛋白,红细胞中运输氧气的蛋白质（含亚铁离子）,Chapter 6 Transport in animals,中
+plasma,血浆,血液中的液体部分（含水、蛋白质、营养物质等）,Chapter 6 Transport in animals,中
+platelets,血小板,参与血液凝固的细胞碎片,Chapter 6 Transport in animals,中
+red blood cells,红细胞,携带氧气的血细胞（含血红蛋白，无细胞核）,Chapter 6 Transport in animals,中
+white blood cells,白细胞,参与免疫反应的血细胞（分多种类型）,Chapter 6 Transport in animals,中
+pathogen,病原体,见前文描述,Chapter 7 Diseases and Immunity,中
+influenza,流感,由流感病毒引起的呼吸道传染病,Chapter 7 Diseases and Immunity,低
+common cold,感冒,由鼻病毒等引起的上呼吸道感染,Chapter 7 Diseases and Immunity,低
+diarrhea,腹泻,肠道疾病导致的频繁稀便,Chapter 7 Diseases and Immunity,低
+Poliomyelitis (polio),脊髓灰质炎,由脊髓灰质炎病毒引起的致残性疾病,Chapter 7 Diseases and Immunity,高
+cholera,霍乱,由霍乱弧菌引起的急性肠道传染病（严重腹泻）,Chapter 7 Diseases and Immunity,高
+tuberculosis,肺结核,由结核杆菌引起的呼吸道传染病（侵害肺部）,Chapter 7 Diseases and Immunity,高
+tetanus,破伤风,由破伤风杆菌引起的感染（导致肌肉痉挛）,Chapter 7 Diseases and Immunity,高
+rabies,狂犬病,由狂犬病毒引起的致命性脑炎（通过动物咬伤传播）,Chapter 7 Diseases and Immunity,高
+transmissible disease,传染性疾病,可通过病原体传播的疾病,Chapter 7 Diseases and Immunity,中
+direct contact,直接接触,通过身体接触传播疾病（如握手、性行为）,Chapter 7 Diseases and Immunity,低
+indirect contact,间接接触,通过污染物、空气等传播疾病,Chapter 7 Diseases and Immunity,低
+vector,携带者，载体,传播病原体的生物（如蚊子、跳蚤）,Chapter 7 Diseases and Immunity,中
+mechanical barrier,机械性防线,身体阻挡病原体的物理结构（如皮肤、黏膜）,Chapter 7 Diseases and Immunity,中
+chemical barrier,化学防线,体内杀灭病原体的化学物质（如胃酸、溶菌酶）,Chapter 7 Diseases and Immunity,中
+hygiene,保健卫生,保持健康的清洁措施（如洗手、消毒）,Chapter 7 Diseases and Immunity,低
+sewage,污水,生活废水（含病原体，需处理以防传播疾病）,Chapter 7 Diseases and Immunity,低
+immune response,免疫反应,身体对抗病原体的防御机制,Chapter 7 Diseases and Immunity,中
+active immunity,主动性免疫,通过自身免疫系统产生抗体的免疫（如疫苗接种）,Chapter 7 Diseases and Immunity,中
+passive immunity,被动免疫,通过输入抗体获得的临时免疫（如母体抗体）,Chapter 7 Diseases and Immunity,中
+lymphocyte,淋巴细胞,参与免疫的白细胞（分T细胞、B细胞等）,Chapter 7 Diseases and Immunity,高
+memory cells,记忆细胞,记住病原体并快速反应的免疫细胞,Chapter 7 Diseases and Immunity,高
+antigen,抗原,能引发免疫反应的外来物质（如病原体表面蛋白）,Chapter 7 Diseases and Immunity,中
+antibody,抗体,见前文描述,Chapter 7 Diseases and Immunity,中
+vaccine,疫苗,含弱化或灭活病原体的制剂（用于激发免疫反应）,Chapter 7 Diseases and Immunity,中
+vaccination,接种疫苗,通过注射疫苗获得免疫力的过程,Chapter 7 Diseases and Immunity,中
+aerobic respiration,有氧呼吸,需要氧气参与的呼吸作用（分解葡萄糖产生大量ATP）,Chapter 8 Respiration and Gas Exchange,中
+anaerobic respiration,无氧呼吸,无需氧气的呼吸作用（分解葡萄糖产生少量ATP或乳酸/酒精）,Chapter 8 Respiration and Gas Exchange,中
+gas exchange,气体交换,生物体与外界环境之间的氧气和二氧化碳交换过程,Chapter 8 Respiration and Gas Exchange,中
+gas exchange surface,气体交换表面,进行气体交换的特化结构（如肺的肺泡、鳃的鳃丝）,Chapter 8 Respiration and Gas Exchange,高
+lactic acid,乳酸,无氧呼吸的产物之一（人体肌肉细胞缺氧时产生）,Chapter 8 Respiration and Gas Exchange,中
+goblet cell,杯状细胞,分泌黏液的上皮细胞（如呼吸道、消化道中）,Chapter 8 Respiration and Gas Exchange,高
+cilia,纤毛,细胞表面的细小毛状结构（用于摆动推动黏液或颗粒）,Chapter 8 Respiration and Gas Exchange,高
+larynx,喉,连接咽和气管的结构（含声带，负责发声）,Chapter 8 Respiration and Gas Exchange,中
+trachea,气管,连接喉和支气管的呼吸管道（含软骨环维持形状）,Chapter 8 Respiration and Gas Exchange,中
+cartilage,软骨,坚韧的结缔组织（如气管、耳廓中的支撑结构）,Chapter 8 Respiration and Gas Exchange,中
+bronchus,支气管,气管分支进入肺部的管道（分为左右主支气管）,Chapter 8 Respiration and Gas Exchange,中
+bronchiole,细支气管,支气管的细小分支（无软骨，平滑肌控制管径）,Chapter 8 Respiration and Gas Exchange,高
+alveoli,肺泡,肺部微小气囊（气体交换场所，壁薄且富含毛细血管）,Chapter 8 Respiration and Gas Exchange,中
+diaphragm,隔膜,分隔胸腔和腹腔的肌肉层（参与呼吸运动）,Chapter 8 Respiration and Gas Exchange,中
+rib,肋骨,胸腔的骨骼结构（保护内脏并参与呼吸运动）,Chapter 8 Respiration and Gas Exchange,低
+external intercostal muscle,肋间外肌,肋骨之间的肌肉（收缩时提升肋骨，协助吸气）,Chapter 8 Respiration and Gas Exchange,高
+internal intercostal muscle,肋间内肌,肋骨之间的肌肉（收缩时降低肋骨，协助呼气）,Chapter 8 Respiration and Gas Exchange,高
+Inspiration,吸气,呼吸过程中空气进入肺部的动作,Chapter 8 Respiration and Gas Exchange,中
+Expiration,呼气,呼吸过程中空气排出肺部的动作,Chapter 8 Respiration and Gas Exchange,中
+yeast,酵母菌,单细胞真菌（可进行有氧或无氧呼吸，用于发酵）,Chapter 8 Respiration and Gas Exchange,低
+alcohol,酒精,乙醇（某些生物无氧呼吸的产物，如酵母菌）,Chapter 8 Respiration and Gas Exchange,低
+soda lime,碱石灰,吸收二氧化碳的化学试剂（常用于实验）,Chapter 8 Respiration and Gas Exchange,高
+parafilm,封口膜,实验室用封口材料（密封容器防止污染）,Chapter 8 Respiration and Gas Exchange,高
+pipette,滴管,用于移取少量液体的工具,Chapter 8 Respiration and Gas Exchange,低
+glass rod,玻璃棒,实验室常用搅拌或引流工具,Chapter 8 Respiration and Gas Exchange,低
+larvae,幼虫,动物发育的幼体阶段（如蝴蝶的毛毛虫）,Chapter 8 Respiration and Gas Exchange,低
+gauze,网子,多孔材料（用于过滤或覆盖）,Chapter 8 Respiration and Gas Exchange,低
+rubber stopper,橡胶塞,密封容器的橡胶制品,Chapter 8 Respiration and Gas Exchange,低
+combustion,燃烧,剧烈的氧化反应（释放热量和二氧化碳）,Chapter 8 Respiration and Gas Exchange,低
+composition,组成,物质的构成成分,Chapter 8 Respiration and Gas Exchange,低
+debt,债务,此处指“氧债”（无氧呼吸后需补充的氧气量）,Chapter 8 Respiration and Gas Exchange,高
+excretion,排泄,生物体排出代谢废物的过程（如尿素、二氧化碳）,Chapter 9 Excretion,中
+egestion,排泄,排出未消化食物残渣的过程（即排便）,Chapter 9 Excretion,高
+urea,尿素,蛋白质代谢的主要废物（经肾脏排出）,Chapter 9 Excretion,中
+urine,尿液,肾脏产生的液体废物（含尿素、无机盐等）,Chapter 9 Excretion,低
+deamination,脱氨基,分解氨基酸时去除氨基的过程（产生尿素）,Chapter 9 Excretion,高
+ureter,输尿管,连接肾脏和膀胱的管道（输送尿液）,Chapter 9 Excretion,中
+bladder,膀胱,储存尿液的肌性囊状器官,Chapter 9 Excretion,中
+urethra,尿道,将尿液从膀胱排出体外的管道,Chapter 9 Excretion,中
+renal vein,肾静脉,将处理后的血液从肾脏带回心脏的静脉,Chapter 9 Excretion,高
+renal artery,肾动脉,将血液输送到肾脏的动脉（含丰富氧气和废物）,Chapter 9 Excretion,高
+medulla,髓质,器官的内层组织（如肾脏髓质含肾小管）,Chapter 9 Excretion,高
+cortex,皮质,器官的外层组织（如肾脏皮质含肾小体）,Chapter 9 Excretion,高
+nephron,肾元,肾脏的基本功能单位（负责过滤和重吸收）,Chapter 9 Excretion,高
+glomerulus,肾小球,肾元中毛细血管组成的滤过结构（位于肾小囊内）,Chapter 9 Excretion,高
+dialysis,透析,通过半透膜清除血液中废物的过程（如人工肾）,Chapter 9 Excretion,中
+fluid,液体,此处指体内的体液（如血液、组织液）,Chapter 9 Excretion,低
+pelvis,肾盂,肾脏内连接输尿管的漏斗状结构（收集尿液）,Chapter 9 Excretion,高
+central nervous system (CNS),中枢神经系统,包括脑和脊髓（负责处理和传递信息）,Chapter 10 Coordination,中
+brain,脑,中枢神经系统的主要部分（控制思维、运动等功能）,Chapter 10 Coordination,低
+spinal cord,脊髓,中枢神经系统的组成部分（传递神经信号，控制反射）,Chapter 10 Coordination,中
+peripheral nervous system (PNS),外周神经系统,由脑和脊髓以外的神经组成（连接身体各部分）,Chapter 10 Coordination,高
+neurone,神经元,神经细胞（传递神经冲动的基本单位）,Chapter 10 Coordination,中
+nerve,神经,由神经元组成的纤维束（传递神经信号）,Chapter 10 Coordination,中
+axon,轴突,神经元长而细的突起（传导神经冲动远离细胞体）,Chapter 10 Coordination,高
+dendrite,树突,神经元短而分支的突起（接收神经冲动并传向细胞体）,Chapter 10 Coordination,高
+nerve impulse,神经冲动,神经元传递的电信号,Chapter 10 Coordination,中
+motor neuron,运动神经元,将神经冲动从脊髓传递到效应器的神经元,Chapter 10 Coordination,高
+sensory neuron,感觉神经元,将神经冲动从感受器传递到脊髓的神经元,Chapter 10 Coordination,高
+relay neuron,中间神经元,脊髓内连接感觉和运动神经元的神经元,Chapter 10 Coordination,高
+voluntary action,自主行为,受大脑控制的有意识行为（如举手）,Chapter 10 Coordination,中
+involuntary action,非自主行为,不受意识控制的自动行为（如心跳）,Chapter 10 Coordination,中
+reflex action,反射行为,快速、自动的反应（如缩手反射）,Chapter 10 Coordination,中
+reflex arc,反射弧,反射活动的神经通路（感受器→传入神经→神经中枢→传出神经→效应器）,Chapter 10 Coordination,高
+receptor,受体,接收刺激并产生神经冲动的结构（如皮肤中的触觉受体）,Chapter 10 Coordination,中
+effector,效应器,对神经冲动作出反应的结构（如肌肉或腺体）,Chapter 10 Coordination,中
+stimuli,刺激物,引起生物体反应的外界或内部因素,Chapter 10 Coordination,中
+synapse,突触,神经元之间的连接部位（通过神经递质传递信号）,Chapter 10 Coordination,中
+accommodation,调节,眼睛调整焦距看清不同距离物体的能力,Chapter 10 Coordination,高
+antagonistic muscles,拮抗肌,成对作用相反的肌肉（如肱二头肌和肱三头肌）,Chapter 10 Coordination,高
+ciliary muscle,睫状肌,眼睛中调节晶状体形状的肌肉,Chapter 10 Coordination,高
+cornea,眼角膜,眼睛前部的透明结构（聚焦光线进入眼球）,Chapter 10 Coordination,中
+iris,虹膜,眼睛中控制瞳孔大小的有色环行肌肉,Chapter 10 Coordination,中
+lens,晶状体,眼睛中调节焦距的透明结构（通过睫状肌改变形状）,Chapter 10 Coordination,中
+optic nerve,视神经,将视觉信号从视网膜传递到大脑的神经,Chapter 10 Coordination,中
+pupil,瞳孔,虹膜中央的开口（控制进入眼球的光量）,Chapter 10 Coordination,低
+retina,视网膜,眼球后部含感光细胞的层（将光信号转为神经冲动）,Chapter 10 Coordination,中
+suspensory ligaments,悬韧带,连接晶状体和睫状肌的纤维（维持晶状体位置）,Chapter 10 Coordination,高
+endocrine glands,内分泌腺,无导管腺体（分泌激素直接进入血液）,Chapter 10 Coordination,中
+hormones,激素,由内分泌腺分泌的化学信使（调节生理活动）,Chapter 10 Coordination,中
+pituitary gland,垂体,位于脑底部的内分泌腺（分泌多种激素，如生长激素）,Chapter 10 Coordination,高
+adrenal gland,肾上腺,肾脏上方的内分泌腺（分泌肾上腺素、皮质醇）,Chapter 10 Coordination,高
+adrenaline,肾上腺素,应激激素（提高心率、代谢率，应对紧急情况）,Chapter 10 Coordination,中
+ovary,卵巢,女性生殖腺（产生卵细胞和雌激素）,Chapter 10 Coordination,中
+oestrogen,雌激素,女性性激素（促进第二性征发育）,Chapter 10 Coordination,中
+testis,睾丸,男性生殖腺（产生精子和睾酮）,Chapter 10 Coordination,中
+testosterone,睾酮,男性性激素（促进第二性征发育）,Chapter 10 Coordination,中
+pancreas,胰腺,兼具外分泌（消化酶）和内分泌（胰岛素）功能的腺体,Chapter 10 Coordination,中
+insulin,胰岛素,降低血糖的激素（由胰腺胰岛细胞分泌）,Chapter 10 Coordination,中
+thyroid,甲状腺,颈部的内分泌腺（分泌甲状腺素调节代谢）,Chapter 10 Coordination,中
+thyroxine,甲状腺素,甲状腺分泌的激素（促进细胞代谢和生长）,Chapter 10 Coordination,中
+target organs,靶器官,激素作用的特定器官（如胰岛素作用于肝脏）,Chapter 10 Coordination,高
+auxin,生长素,植物激素（促进细胞伸长，调节向光性）,Chapter 10 Coordination,高
+gravitropism,向重力性,植物对重力的反应（如根向下生长）,Chapter 10 Coordination,高
+phototropism,向光性,植物对光的反应（如茎向光弯曲）,Chapter 10 Coordination,高
+tropism,向性,植物对环境刺激的定向生长反应,Chapter 10 Coordination,中
+duration,持续时间,此处指刺激或生理过程的时间长度,Chapter 10 Coordination,低
+glucagon,胰高血糖素,升高血糖的激素（与胰岛素拮抗）,Chapter 11 Homeostasis,中
+glycogen,糖原,储存于肝脏和肌肉的多糖（可分解为葡萄糖）,Chapter 11 Homeostasis,中
+negative feedback,负反馈,维持稳态的机制（如体温调节中抑制过热或过冷）,Chapter 11 Homeostasis,中
+type 1 diabetes,一型糖尿病,因胰岛细胞受损导致胰岛素缺乏的疾病,Chapter 11 Homeostasis,高
+insulation,绝缘/隔热,阻止热量散失的能力（如脂肪组织的保温作用）,Chapter 11 Homeostasis,中
+shiver,战栗,骨骼肌不自主收缩（产生热量维持体温）,Chapter 11 Homeostasis,低
+vasodilation,血管舒张,血管扩张增加血流量（如体温升高时皮肤血管扩张）,Chapter 11 Homeostasis,高
+vasoconstriction,血管收缩,血管缩小减少血流量（如体温降低时皮肤血管收缩）,Chapter 11 Homeostasis,高
+endothermic,恒温的,能自主调节体温的生物（如哺乳动物）,Chapter 11 Homeostasis,中
+ectothermic,变温的,体温随环境变化的生物（如爬行动物）,Chapter 11 Homeostasis,中
+epidermis,表皮,皮肤的外层（保护身体，含角质层）,Chapter 11 Homeostasis,中
+dermis,真皮,皮肤的内层（含血管、神经、毛囊等）,Chapter 11 Homeostasis,中
+cornified layer,角质层,表皮最外层（由死亡细胞构成，防止水分流失）,Chapter 11 Homeostasis,高
+keratin,角蛋白,表皮细胞产生的坚韧蛋白质（构成头发、指甲）,Chapter 11 Homeostasis,高
+erector,竖立的,此处指立毛肌（收缩使毛发竖立）,Chapter 11 Homeostasis,高
+hair erector muscle,立毛肌,皮肤中使毛发竖立的肌肉（受寒冷或情绪刺激）,Chapter 11 Homeostasis,高
+sweat gland,汗腺,皮肤中分泌汗液的腺体（调节体温和排泄）,Chapter 11 Homeostasis,中
+receptor,接收器,此处指体温调节中的温度感受器,Chapter 11 Homeostasis,中
+fat cell,脂肪细胞,储存脂肪的细胞（构成脂肪组织）,Chapter 11 Homeostasis,低
+neuron,神经细胞,见前文描述,Chapter 11 Homeostasis,中
+adipose tissue,脂肪层,见前文描述,Chapter 11 Homeostasis,中
+venule,微静脉,小静脉（连接毛细血管和静脉）,Chapter 11 Homeostasis,高
+arteriole,微动脉,小动脉（连接动脉和毛细血管）,Chapter 11 Homeostasis,高
+hypothalamus,下丘脑,脑内调节体温、饥饿等稳态的区域,Chapter 11 Homeostasis,高
+prostate gland,前列腺,男性生殖系统腺体（分泌精液成分）,Chapter 12 Reproduction in human,高
+sperm duct,精子导管,输送精子的管道（即输精管）,Chapter 12 Reproduction in human,高
+epididymis,附睾,睾丸后储存和成熟精子的结构,Chapter 12 Reproduction in human,高
+testis,睾丸,见前文描述,Chapter 12 Reproduction in human,中
+scrotum,阴囊,包裹睾丸的皮肤囊（调节睾丸温度）,Chapter 12 Reproduction in human,高
+urethra,尿道,见前文描述（此处为排尿和排精共用管道）,Chapter 12 Reproduction in human,中
+penis,阴茎,男性外生殖器官（含尿道，用于交配和排尿）,Chapter 12 Reproduction in human,低
+fallopian tube,输卵管,女性连接卵巢和子宫的管道（受精场所）,Chapter 12 Reproduction in human,中
+oviduct,输卵管,同fallopian tube,Chapter 12 Reproduction in human,中
+ovary,卵巢,见前文描述,Chapter 12 Reproduction in human,中
+ovulation,排卵,卵巢释放卵细胞的过程（月经周期中期）,Chapter 12 Reproduction in human,中
+uterus,子宫,女性孕育胚胎的肌性器官（内壁为子宫内膜）,Chapter 12 Reproduction in human,中
+cervix,子宫颈,子宫下端连接阴道的狭窄部分,Chapter 12 Reproduction in human,高
+urinary bladder,膀胱,见前文描述,Chapter 12 Reproduction in human,中
+vagina,阴道,女性性交器官和胎儿产出通道,Chapter 12 Reproduction in human,中
+fertilization,受精,精子与卵细胞结合形成受精卵的过程,Chapter 12 Reproduction in human,中
+fusion,融合,细胞或分子结合的过程（如精卵融合）,Chapter 12 Reproduction in human,高
+gamete,配子,生殖细胞（精子或卵细胞，单倍体）,Chapter 12 Reproduction in human,中
+sperm,精子,男性配子（具鞭毛，可游动）,Chapter 12 Reproduction in human,低
+egg,卵子,女性配子（含丰富营养，体积较大）,Chapter 12 Reproduction in human,低
+zygote,合子,受精卵（ diploid，发育成新个体）,Chapter 12 Reproduction in human,中
+adaptive,适应性,有利于生存和繁殖的特征,Chapter 12 Reproduction in human,中
+flagellum,鞭毛,细胞的长鞭状结构（如精子尾部用于运动）,Chapter 12 Reproduction in human,高
+embryo,胚胎,受精卵发育的早期阶段（通常指怀孕前8周）,Chapter 12 Reproduction in human,中
+acrosome,顶体,精子头部的结构（含酶，帮助穿透卵细胞）,Chapter 12 Reproduction in human,高
+fetus,胎儿,胚胎发育的后期阶段（怀孕8周后）,Chapter 12 Reproduction in human,中
+placenta,胎盘,连接母体和胎儿的器官（物质交换场所）,Chapter 12 Reproduction in human,中
+umbilical cord,脐带,连接胎儿和胎盘的管道（含血管）,Chapter 12 Reproduction in human,中
+amniotic sac,羊膜囊,包裹胎儿的膜囊（内含羊水）,Chapter 12 Reproduction in human,高
+amniotic fluid,羊水,羊膜囊内的液体（保护胎儿，缓冲压力）,Chapter 12 Reproduction in human,高
+menstrual cycle,月经周期,女性生殖周期（约28天，包括排卵和子宫内膜脱落）,Chapter 12 Reproduction in human,中
+progesterone,孕酮,维持妊娠的激素（由卵巢黄体分泌）,Chapter 12 Reproduction in human,高
+gestation period,孕期,从受孕到分娩的时间（人类约40周）,Chapter 12 Reproduction in human,中
+FSH,促卵泡生成素,促进卵泡发育的激素（由垂体分泌）,Chapter 12 Reproduction in human,高
+LH,促黄体生成素,促进排卵和黄体形成的激素（由垂体分泌）,Chapter 12 Reproduction in human,高
+adolescence,青春期,从童年到成年的过渡阶段（性成熟开始）,Chapter 12 Reproduction in human,低
+puberty,青春期,同adolescence（更侧重性发育）,Chapter 12 Reproduction in human,低
+Chromosome,染色体,见前文描述（含DNA和蛋白质，携带遗传信息）,Chapter 13 Inheritance,中
+Chromatid,染色单体,复制后染色体的两条姐妹结构（由着丝粒连接）,Chapter 13 Inheritance,高
+mitosis,有丝分裂,体细胞分裂方式（产生两个基因相同的子细胞）,Chapter 13 Inheritance,中
+meiosis,减数分裂,生殖细胞分裂方式（产生四个单倍体配子）,Chapter 13 Inheritance,中
+haploid,单倍体,细胞含一套染色体（如配子，n）,Chapter 13 Inheritance,中
+diploid,二倍体,细胞含两套染色体（如体细胞，2n）,Chapter 13 Inheritance,中
+alleles,等位基因,同一基因的不同形式（位于同源染色体相同位置）,Chapter 13 Inheritance,中
+homologous chromosome,同源染色体,形态和基因位置相同的一对染色体（分别来自父母）,Chapter 13 Inheritance,高
+nonhomologous chromosome,非同源染色体,形态和基因位置不同的染色体,Chapter 13 Inheritance,高
+phenotype,表型,生物体表现出的性状（如肤色、血型）,Chapter 13 Inheritance,中
+genotype,基因型,生物体的基因组成（如GG、Gg、gg）,Chapter 13 Inheritance,中
+dominant allele,显性基因,决定显性性状的等位基因（如G，掩盖隐性基因）,Chapter 13 Inheritance,中
+recessive allele,隐性基因,决定隐性性状的等位基因（如g，需纯合才表现）,Chapter 13 Inheritance,中
+codominance alleles,共显性基因,两个等位基因均表现性状（如AB血型的IA和IB）,Chapter 13 Inheritance,高
+heterozygous,杂合子,基因型含两个不同等位基因（如Gg）,Chapter 13 Inheritance,中
+homozygous,纯合子,基因型含两个相同等位基因（如GG或gg）,Chapter 13 Inheritance,中
+genetic diagram,基因图谱,用符号表示遗传杂交过程的图示,Chapter 13 Inheritance,高
+sex-linked genes,性连锁基因,位于性染色体（X或Y）上的基因（如色盲基因在X染色体）,Chapter 13 Inheritance,高
+test crosses,测交,用隐性纯合子与未知基因型个体杂交（判断其基因型）,Chapter 13 Inheritance,高
+first filial generation,子一代,亲代杂交后的第一代 offspring（F1）,Chapter 13 Inheritance,高
+sex determination,性别决定,由性染色体（如XY或XX）决定生物性别的机制,Chapter 13 Inheritance,中
+sex linage,伴性遗传,见sex-linked genes（可能为拼写错误，应为sex linkage）,Chapter 13 Inheritance,高
+inherited,遗传,性状由基因传递给后代的过程,Chapter 13 Inheritance,低
+monohybrid crosses,单基因杂交,涉及一对等位基因的杂交实验,Chapter 13 Inheritance,中
+express,表达,基因指导合成蛋白质并表现性状的过程,Chapter 13 Inheritance,中
+messenger RNA (mRNA),信使RNA,携带DNA遗传信息到核糖体的RNA,Chapter 13 Inheritance,中
+stem cells,干细胞,具有分裂和分化能力的未特化细胞,Chapter 13 Inheritance,中
+adaptive feature,适应性特征,有助于生物生存和繁殖的特性（如保护色）,Chapter 14 Variation and selection,中
+continuous variation,连续变异,性状表现为连续的梯度（如身高、体重）,Chapter 14 Variation and selection,中
+discontinuous variation,不连续变异,性状表现为离散的类别（如血型、性别）,Chapter 14 Variation and selection,中
+hydrophyte,水生植物,生长在水中或潮湿环境的植物,Chapter 14 Variation and selection,高
+selection pressure,选择压力,环境对特定性状的筛选作用（促进适应环境的性状保留）,Chapter 14 Variation and selection,中
+selective breeding,选择育种,人工选择具有优良性状的个体繁殖（如培育高产作物）,Chapter 14 Variation and selection,中
+Movement,运动,生物体的位置变化或内部结构活动,Chapter 15 Classification,低
+Respiration,呼吸,生物体获取能量的过程（包括有氧和无氧呼吸）,Chapter 15 Classification,低
+Sensitivity,敏感性,生物体对刺激作出反应的能力,Chapter 15 Classification,低
+Growth,生长,生物体体积或细胞数量的增加,Chapter 15 Classification,低
+Reproduction,繁殖,产生后代的过程（有性或无性）,Chapter 15 Classification,低
+Excretion,排泄,排出代谢废物的过程（如二氧化碳、尿素）,Chapter 15 Classification,低
+Nutrition,营养,获取和利用食物的过程,Chapter 15 Classification,低
+organism,有机体/生物,具有生命特征的个体,Chapter 15 Classification,低
+metabolic reaction,新陈代谢反应,生物体内所有化学反应的总和,Chapter 15 Classification,中
+fertile,肥沃的/可生育的,此处指可产生后代的能力,Chapter 15 Classification,中
+kingdom,界,生物分类的最高等级（如动物界、植物界）,Chapter 15 Classification,低
+genus,属,生物分类的等级（介于科和种之间）,Chapter 15 Classification,中
+species,种,生物分类的基本单位（能相互交配产生可育后代）,Chapter 15 Classification,低
+binomial system,双名法,生物命名法（由属名+种名组成，如Homo sapiens）,Chapter 15 Classification,中
+dichotomous key,二分法检索表,用于鉴定生物种类的工具（通过成对特征区分）,Chapter 15 Classification,高
+fungus,真菌,一类异养生物（如蘑菇、酵母菌，细胞壁含几丁质）,Chapter 15 Classification,中
+hyphae,菌丝,真菌的丝状结构（组成菌体）,Chapter 15 Classification,高
+spores,孢子,真菌或植物的繁殖体（单细胞或多细胞）,Chapter 15 Classification,中
+dicotyledons,双子叶植物,种子具两片子叶的植物（如豆类、玫瑰）,Chapter 15 Classification,中
+monocotyledons,单子叶植物,种子具一片子叶的植物（如小麦、玉米）,Chapter 15 Classification,中
+mammary glands,乳腺,哺乳动物分泌乳汁的腺体,Chapter 15 Classification,中
+pinna,耳朵,外耳的可见部分（收集声波）,Chapter 15 Classification,高
+placenta,胎盘,见前文描述（此处指哺乳动物的胎儿-母体交换器官）,Chapter 15 Classification,中
+classification,分类学,对生物进行分类的科学,Chapter 15 Classification,中
+Vertebrate,脊椎动物,具有脊柱的动物（如鱼类、鸟类）,Chapter 15 Classification,低
+Invertebrate,无脊椎动物,无脊柱的动物（如昆虫、软体动物）,Chapter 15 Classification,低
+Annelids,环节动物,身体分节的蠕虫（如蚯蚓、水蛭）,Chapter 15 Classification,高
+Molluscs,软体动物,具柔软身体和外壳的动物（如蜗牛、章鱼）,Chapter 15 Classification,高
+Nematodes,线虫类,圆柱形蠕虫（如蛔虫，多寄生）,Chapter 15 Classification,高
+Arthropods,节肢动物,具外骨骼和分节附肢的动物（如昆虫、蜘蛛）,Chapter 15 Classification,中
+Fish,鱼,水生脊椎动物（用鳃呼吸，具鳞片）,Chapter 15 Classification,低
+Amphibians,两栖动物,水陆两栖脊椎动物（如青蛙、蝾螈）,Chapter 15 Classification,低
+Reptiles,爬行动物,陆生脊椎动物（具鳞片，冷血）,Chapter 15 Classification,低
+Birds,鸟,具羽毛和喙的脊椎动物（恒温，卵生）,Chapter 15 Classification,低
+Mammals,哺乳动物,具毛发和乳腺的脊椎动物（多数胎生）,Chapter 15 Classification,低
+Insect,昆虫,节肢动物的一类（身体分头胸腹，三对足）,Chapter 15 Classification,低
+Crustaceans,甲壳动物,节肢动物的一类（如虾、蟹，具甲壳）,Chapter 15 Classification,高
+Arachnids,蛛形纲动物,节肢动物的一类（如蜘蛛、蝎子，四对足）,Chapter 15 Classification,高
+Myriapods,多足动物,节肢动物的一类（如蜈蚣、马陆，多对足）,Chapter 15 Classification,高
+Primates,灵长目,哺乳动物的一目（如人类、猴子，具对生拇指）,Chapter 15 Classification,高
+Morphology,形态学,研究生物形态和结构的学科,Chapter 15 Classification,高
+Anatomy,解剖学,研究生物内部结构的学科,Chapter 15 Classification,高
+Saprophytic,腐生的,以分解有机物为营养的生活方式（如腐生真菌）,Chapter 15 Classification,高
+Endoskeleton,内骨骼,体内的骨骼系统（如哺乳动物的骨骼）,Chapter 15 Classification,中
+Exoskeleton,外骨骼,体外的坚硬外壳（如昆虫的几丁质外壳）,Chapter 15 Classification,中
+organic,有机的,含碳的化合物（如糖类、蛋白质）,Chapter 16 Plant nutrition,低
+vitamin,维生素,见前文描述,Chapter 16 Plant nutrition,低
+lamina,叶片,叶的扁平部分（进行光合作用的主要部位）,Chapter 16 Plant nutrition,中
+petiole,叶柄,连接叶片和茎的结构,Chapter 16 Plant nutrition,高
+vein,叶脉,叶片中的维管束（运输水、营养和支持叶片）,Chapter 16 Plant nutrition,中
+epidermis,表皮,见前文描述（此处指叶片表皮）,Chapter 16 Plant nutrition,中
+cuticle,角质层,叶片表面的蜡质层（减少水分蒸发）,Chapter 16 Plant nutrition,中
+stomata,气孔,叶片表面的小孔（控制气体交换和蒸腾作用）,Chapter 16 Plant nutrition,中
+air space,气室,叶肉中的空隙（储存气体，利于气体交换）,Chapter 16 Plant nutrition,高
+guard cell,保卫细胞,控制气孔开闭的肾形细胞,Chapter 16 Plant nutrition,中
+mesophyll,叶肉,叶片内的光合组织（包括栅栏组织和海绵组织）,Chapter 16 Plant nutrition,中
+palisade mesophyll,栅栏组织,叶肉上层紧密排列的细胞（含大量叶绿体）,Chapter 16 Plant nutrition,高
+palisade cell,栅栏细胞,构成栅栏组织的细胞,Chapter 16 Plant nutrition,高
+spongy mesophyll,海绵组织,叶肉下层疏松排列的细胞（含气孔下腔）,Chapter 16 Plant nutrition,高
+spongy cell,海绵细胞,构成海绵组织的细胞,Chapter 16 Plant nutrition,高
+xylem,木质部,植物体内运输水分和无机盐的组织（含导管）,Chapter 16 Plant nutrition,中
+phloem,韧皮部,植物体内运输有机物的组织（含筛管）,Chapter 16 Plant nutrition,中
+vascular bundle,维管束,木质部和韧皮部组成的束状结构,Chapter 16 Plant nutrition,中
+destarch,脱淀粉,通过黑暗处理去除植物叶片中的淀粉,Chapter 16 Plant nutrition,高
+limiting factor,限制因素,制约反应速率的因素（如光合作用中的光照强度）,Chapter 16 Plant nutrition,中
+chlorophyll,叶绿素,见前文描述,Chapter 16 Plant nutrition,中
+photosynthesis,光合作用,植物利用光能合成有机物的过程,Chapter 16 Plant nutrition,低
+sucrose,蔗糖,见前文描述,Chapter 16 Plant nutrition,中
+arbitrary units,任意单位,实验中使用的无特定物理意义的单位,Chapter 16 Plant nutrition,高
+lignin,木质素,植物细胞壁中的坚硬物质（增强木质部支持力）,Chapter 17 Transport in plant,高
+phloem,韧皮部,见前文描述,Chapter 17 Transport in plant,中
+xylem,木质部,见前文描述,Chapter 17 Transport in plant,中
+sieve plate,筛板,筛管分子末端的多孔结构（允许物质通过）,Chapter 17 Transport in plant,高
+sieve tube element,筛管分子,韧皮部中运输有机物的细胞（无细胞核）,Chapter 17 Transport in plant,高
+companion cell,伴细胞,与筛管分子伴生的细胞（提供代谢支持）,Chapter 17 Transport in plant,高
+cortex,皮层,根或茎的表皮与维管束之间的组织,Chapter 17 Transport in plant,高
+stele,中柱,根或茎的中央维管组织区域,Chapter 17 Transport in plant,高
+root tip,根尖,根的顶端部分（含分生组织，负责生长）,Chapter 17 Transport in plant,中
+root cap,根冠,根尖的保护结构（分泌黏液，利于根在土壤中生长）,Chapter 17 Transport in plant,高
+transpiration,蒸腾作用,植物通过叶片气孔散失水分的过程,Chapter 17 Transport in plant,中
+stream,水流,此处指植物体内的水分运输流,Chapter 17 Transport in plant,高
+potometer,蒸腾计,测量植物蒸腾速率的仪器,Chapter 17 Transport in plant,高
+transpiration pull,蒸腾拉力,蒸腾作用产生的向上拉力（促进水分运输）,Chapter 17 Transport in plant,高
+translocation,转移,有机物在韧皮部中的运输过程,Chapter 17 Transport in plant,中
+sink,库,植物中消耗或储存有机物质的部位（如果实、根）,Chapter 17 Transport in plant,高
+source,源,植物中生产有机物质的部位（如叶片）,Chapter 17 Transport in plant,高
+dormant,休眠的,植物或种子暂时停止生长的状态,Chapter 17 Transport in plant,中
+tuber,块状根或茎,储存营养的膨大块状结构（如马铃薯块茎）,Chapter 17 Transport in plant,中
+asexual reproduction,无性繁殖,不涉及配子结合的繁殖方式（如扦插、出芽）,Chapter 18 Reproduction in plants,中
+sexual reproduction,有性繁殖,涉及配子结合的繁殖方式（产生受精卵）,Chapter 18 Reproduction in plants,中
+chromosome,染色体,见前文描述,Chapter 18 Reproduction in plants,中
+genetically identical,基因相同的,具有相同遗传物质的（如无性繁殖后代）,Chapter 18 Reproduction in plants,中
+gene,基因,DNA上决定性状的基本单位,Chapter 18 Reproduction in plants,低
+stem tuber,块茎,见前文描述（如马铃薯的地下茎）,Chapter 18 Reproduction in plants,中
+gamete,配子,见前文描述,Chapter 18 Reproduction in plants,中
+fertilization,受精,见前文描述,Chapter 18 Reproduction in plants,中
+zygote,合子,见前文描述,Chapter 18 Reproduction in plants,中
+diploid,二倍体,见前文描述,Chapter 18 Reproduction in plants,中
+haploid,单倍体,见前文描述,Chapter 18 Reproduction in plants,中
+meiosis,减数分裂,见前文描述,Chapter 18 Reproduction in plants,中
+sperm,精子,见前文描述,Chapter 18 Reproduction in plants,低
+egg cell,卵细胞,见前文描述,Chapter 18 Reproduction in plants,低
+sepal,萼片,花的组成部分（保护未开放的花，通常绿色）,Chapter 18 Reproduction in plants,中
+petal,花瓣,花的组成部分（吸引传粉者，常具颜色）,Chapter 18 Reproduction in plants,低
+nectar,花蜜,花内分泌的含糖液体（吸引昆虫传粉）,Chapter 18 Reproduction in plants,中
+nectary,蜜腺,花中分泌花蜜的结构,Chapter 18 Reproduction in plants,高
+receptacle,花托,花的基部结构（支撑花的各部分）,Chapter 18 Reproduction in plants,高
+stamen,雄蕊,花的雄性生殖器官（由花丝和花药组成）,Chapter 18 Reproduction in plants,中
+filament,花丝,雄蕊的细长部分（支持花药）,Chapter 18 Reproduction in plants,高
+anther,花药,雄蕊顶端产生花粉的结构,Chapter 18 Reproduction in plants,中
+pollen sac,花粉囊,花药内产生花粉粒的腔室,Chapter 18 Reproduction in plants,高
+pollen grain,花粉粒,雄配子体（含精子）,Chapter 18 Reproduction in plants,中
+pollen tube,花粉管,花粉粒萌发形成的管状物（将精子输送到胚珠）,Chapter 18 Reproduction in plants,中
+carpel,心皮,花的雌性生殖器官（由子房、花柱、柱头组成）,Chapter 18 Reproduction in plants,高
+style,花柱,心皮的细长部分（连接柱头和子房）,Chapter 18 Reproduction in plants,高
+stigma,柱头,心皮顶端接收花粉的结构,Chapter 18 Reproduction in plants,中
+ovule,胚珠,子房内的结构（含卵细胞，受精后发育成种子）,Chapter 18 Reproduction in plants,中
+ovary,子房,心皮基部膨大的部分（发育成果实）,Chapter 18 Reproduction in plants,中
+placenta,胎座,子房内胚珠附着的部位,Chapter 18 Reproduction in plants,高
+integument,珠被,胚珠的外层保护结构（发育成种皮）,Chapter 18 Reproduction in plants,高
+micropyle,珠孔,胚珠上的小孔（花粉管进入的通道）,Chapter 18 Reproduction in plants,高
+pollinator,传粉者,帮助植物传递花粉的生物（如蜜蜂、风）,Chapter 18 Reproduction in plants,中
+self-pollination,自花传粉,花粉从同一朵花的花药传到柱头,Chapter 18 Reproduction in plants,中
+cross-pollination,异花传粉,花粉从一朵花传到另一朵花的柱头,Chapter 18 Reproduction in plants,中
+wind-pollination,风媒传粉,借助风力传递花粉的方式,Chapter 18 Reproduction in plants,中
+testa,外种皮,种子的坚硬外层（保护胚和胚乳）,Chapter 18 Reproduction in plants,高
+radicle,胚根,种子中发育成根的部分,Chapter 18 Reproduction in plants,中
+plumule,胚芽,种子中发育成茎和叶的部分,Chapter 18 Reproduction in plants,中
+hilum,种脐,种子上连接胚珠的痕迹（如豆类种子的疤痕）,Chapter 18 Reproduction in plants,高
+dispersal,（种子）传播,种子远离母体的过程（通过风、动物等）,Chapter 18 Reproduction in plants,中
+breed,繁育,培育具有特定性状的生物品种,Chapter 18 Reproduction in plants,中
+germination,发芽,种子发育成幼苗的过程,Chapter 18 Reproduction in plants,中
+ecology,生态学,研究生物与环境相互关系的学科,Chapter 19 Organisms and their environment,低
+ecosystem,生态系统,生物群落及其生存环境的总和,Chapter 19 Organisms and their environment,低
+habitat,栖息地,生物生存的具体环境（如森林、草原）,Chapter 19 Organisms and their environment,低
+population,种群,同一区域内同种生物的所有个体,Chapter 19 Organisms and their environment,低
+community,群落,同一区域内所有生物种群的集合,Chapter 19 Organisms and their environment,低
+food chain,食物链,生物之间通过捕食关系形成的链状结构,Chapter 19 Organisms and their environment,低
+food web,食物网,多条食物链交织形成的复杂网络,Chapter 19 Organisms and their environment,中
+trophic level,营养级,食物链中的各个环节（如生产者、消费者）,Chapter 19 Organisms and their environment,中
+consumer,消费者,以其他生物为食的生物（如动物）,Chapter 19 Organisms and their environment,低
+producer,生产者,通过光合作用制造有机物的生物（如植物）,Chapter 19 Organisms and their environment,低
+decomposer,分解者,分解有机物的生物（如细菌、真菌）,Chapter 19 Organisms and their environment,低
+herbivore,食草动物,以植物为食的动物,Chapter 19 Organisms and their environment,低
+carnivore,食肉动物,以其他动物为食的动物,Chapter 19 Organisms and their environment,低
+predator,捕食者,捕食其他生物的动物,Chapter 19 Organisms and their environment,中
+prey,被捕食者,被其他生物捕食的生物,Chapter 19 Organisms and their environment,中
+energy flow,能量流动,生态系统中能量的传递过程（单向递减）,Chapter 19 Organisms and their environment,中
+energy loss,能量损耗,能量在传递过程中的散失（如呼吸作用散热）,Chapter 19 Organisms and their environment,中
+pyramid of biomass,生物量金字塔,按营养级生物量绘制的金字塔形图,Chapter 19 Organisms and their environment,高
+nitrogen fixation,固氮作用,将大气中的氮气转化为含氮化合物的过程,Chapter 19 Organisms and their environment,高
+nitrification,硝化作用,将氨转化为硝酸盐的过程（由硝化细菌完成）,Chapter 19 Organisms and their environment,高
+nitrifying bacteria,硝化细菌,参与硝化作用的细菌,Chapter 19 Organisms and their environment,高
+denitrifying bacteria,反硝化细菌,将硝酸盐转化为氮气的细菌,Chapter 19 Organisms and their environment,高
+birth rate,出生率,单位时间内新个体产生的比率,Chapter 19 Organisms and their environment,中
+death rate,死亡率,单位时间内个体死亡的比率,Chapter 19 Organisms and their environment,中
+immigration,迁入,个体进入种群的过程,Chapter 19 Organisms and their environment,中
+emigration,迁出,个体离开种群的过程,Chapter 19 Organisms and their environment,中
+sigmoid growth curve,S型生长曲线,种群数量先指数增长后稳定的曲线,Chapter 19 Organisms and their environment,高
+lag phase,迟滞期,种群生长初期的缓慢增长阶段,Chapter 19 Organisms and their environment,高
+log phase,对数生长期,种群数量快速增长的阶段,Chapter 19 Organisms and their environment,高
+exponential phase,指数生长期,同log phase,Chapter 19 Organisms and their environment,高
+stationary phase,稳定期,种群数量达到环境容纳量的阶段,Chapter 19 Organisms and their environment,高
+death phase,死亡期,种群数量下降的阶段,Chapter 19 Organisms and their environment,高
+oscillate,震荡,种群数量波动变化,Chapter 19 Organisms and their environment,高
+biofuels,生物燃料,由生物材料制成的燃料（如乙醇、生物柴油）,Chapter 20 Biotechnology and genetic,中
+pectin,果胶,植物细胞壁中的多糖（用于制作果冻）,Chapter 20 Biotechnology and genetic,高
+pectinase,果胶酶,分解果胶的酶（用于果汁澄清）,Chapter 20 Biotechnology and genetic,高
+lactase,乳糖酶,分解乳糖为葡萄糖和半乳糖的酶,Chapter 20 Biotechnology and genetic,高
+lactose,乳糖,见前文描述,Chapter 20 Biotechnology and genetic,中
+fermentation,发酵,微生物在无氧条件下分解有机物的过程,Chapter 20 Biotechnology and genetic,中
+fermenter,发酵罐,用于大规模发酵的设备,Chapter 20 Biotechnology and genetic,高
+genetic engineering,基因工程,人工改造生物基因的技术,Chapter 20 Biotechnology and genetic,中
+genetically modified,转基因的,通过基因工程改造的生物,Chapter 20 Biotechnology and genetic,中
+herbicide resistant,抗除草剂的,对除草剂具有抗性的性状（如转基因作物）,Chapter 20 Biotechnology and genetic,中
+pest-resistant,抗虫的,对害虫具有抗性的性状,Chapter 20 Biotechnology and genetic,中
+restriction enzyme,限制性内切酶,切割DNA特定序列的酶（基因工程工具）,Chapter 20 Biotechnology and genetic,高
+sticky ends,粘性末端,DNA切割后形成的单链末端（便于连接）,Chapter 20 Biotechnology and genetic,高
+plasmid,质粒,细菌中独立于染色体的环状DNA分子（载体）,Chapter 20 Biotechnology and genetic,高
+ligase,连接酶,连接DNA片段的酶,Chapter 20 Biotechnology and genetic,高
+modification,修改,此处指基因修饰,Chapter 20 Biotechnology and genetic,中
+sterilised,灭菌的,无微生物存在的状态,Chapter 20 Biotechnology and genetic,高
+DNA ligase,DNA连接酶,见ligase,Chapter 20 Biotechnology and genetic,高
+recombinant plasmid,重组质粒,插入外源DNA的质粒,Chapter 20 Biotechnology and genetic,高
+deforestation,去森林化,砍伐森林导致的生态破坏,Chapter 21 Human influences on ecosystems,中
+clear-felling,完全砍伐,大面积砍伐所有树木的行为,Chapter 21 Human influences on ecosystems,高
+monoculture,单一栽培,大面积种植单一作物的农业方式,Chapter 21 Human influences on ecosystems,高
+livestock,牲畜,家养动物（如牛、羊）,Chapter 21 Human influences on ecosystems,低
+biodiversity,生物多样性,生物种类和基因的多样性,Chapter 21 Human influences on ecosystems,低
+greenhouse effect,温室效应,大气中温室气体导致的全球变暖现象,Chapter 21 Human influences on ecosystems,低
+global warming,全球变暖,地球平均温度上升的现象,Chapter 21 Human influences on ecosystems,低
+nuclear fall-out,核泄漏,核事故导致的放射性物质扩散,Chapter 21 Human influences on ecosystems,高
+eutrophication,富营养化,水体中营养物质过多导致的污染,Chapter 21 Human influences on ecosystems,中
+persistent insecticide,持久性杀虫剂,难以降解的杀虫剂（如DDT）,Chapter 21 Human influences on ecosystems,高
+conservation,保护,保护自然环境和生物多样性的措施,Chapter 21 Human influences on ecosystems,低
+recycling,回收利用,废弃物再加工利用的过程,Chapter 21 Human influences on ecosystems,低
+biodegradable,可生物降解的,能被微生物分解的物质,Chapter 21 Human influences on ecosystems,中
+raw sewage,污水,未经处理的生活废水,Chapter 21 Human influences on ecosystems,中
+trickling filter,滴滤池,污水处理中的过滤装置,Chapter 21 Human influences on ecosystems,高
+activated sludge,活性污泥,污水处理中含微生物的絮状污泥,Chapter 21 Human influences on ecosystems,高
+restocking,种群恢复,向生态系统补充生物个体的措施,Chapter 21 Human influences on ecosystems,高
+endangered species,濒危物种,面临灭绝风险的物种,Chapter 21 Human influences on ecosystems,低
+sustainable,可持续的,不破坏环境的发展方式,Chapter 21 Human influences on ecosystems,低
+introduced species,外来物种,引入到非原生环境的物种（可能造成入侵）,Chapter 21 Human influences on ecosystems,中
+selective breeding,选择育种,见前文描述,Chapter 21 Human influences on ecosystems,中
+artificial insemination,人工授精,人工将精子导入雌性体内的技术,Chapter 21 Human influences on ecosystems,高
+IVF,体外受精,在体外完成受精的技术（辅助生殖）,Chapter 21 Human influences on ecosystems,高

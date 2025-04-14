@@ -2,6 +2,10 @@
   <q-page padding>
     <div class="text-h4 q-mb-md">管理员仪表盘</div>
     
+    <q-inner-loading :showing="loading">
+      <q-spinner-dots size="50px" color="primary" />
+    </q-inner-loading>
+    
     <div class="row q-col-gutter-md">
       <!-- 用户统计卡片 -->
       <div class="col-12 col-md-4">
@@ -263,6 +267,7 @@ export default defineComponent({
     const newPassword = ref('')
     const confirmPassword = ref('')
     const passwordLoading = ref(false)
+    const loading = ref(false)
     
     // 统计数据
     const stats = ref({
@@ -278,7 +283,43 @@ export default defineComponent({
     })
     
     // 最近操作记录
-    const recentActions = ref([])
+    const recentActions = ref([
+      {
+        id: 1,
+        date: '2023-05-16 14:30',
+        admin: 'Admin User',
+        action: '添加模块',
+        details: '添加了新模块 "Plant Biology"'
+      },
+      {
+        id: 2,
+        date: '2023-05-16 11:20',
+        admin: 'Admin User',
+        action: '修改用户',
+        details: '更新了用户 "Emily Chen" 的年级信息'
+      },
+      {
+        id: 3,
+        date: '2023-05-15 16:45',
+        admin: 'Admin User',
+        action: '添加词汇',
+        details: '向 "Cell Structure" 模块添加了5个新词汇'
+      },
+      {
+        id: 4,
+        date: '2023-05-15 09:30',
+        admin: 'Admin User',
+        action: '修改模块',
+        details: '更新了 "DNA & Genetics" 模块的描述'
+      },
+      {
+        id: 5,
+        date: '2023-05-14 14:15',
+        admin: 'Admin User',
+        action: '删除词汇',
+        details: '从 "Cell Structure" 模块删除了1个词汇'
+      }
+    ])
     
     // 表格列定义
     const actionColumns = [
@@ -349,15 +390,13 @@ export default defineComponent({
           avgCompletionRate: data.learningStats.avgCompletionRate
         };
         
-        // 加载最近用户和模块数据
-        await userStore.loadAllUsers();
-        await vocabStore.loadAllModules();
-        
+        loading.value = false;
       } catch (error) {
-        console.error('加载仪表盘数据出错:', error);
+        console.error('加载仪表盘数据失败:', error);
+        
         $q.notify({
           color: 'negative',
-          message: '加载仪表盘数据失败',
+          message: '加载仪表盘统计数据失败',
           icon: 'error'
         });
         
@@ -373,46 +412,9 @@ export default defineComponent({
           learnedToday: 36,
           avgCompletionRate: 68
         };
+        
+        loading.value = false;
       }
-      
-      // 模拟最近操作记录
-      recentActions.value = [
-        {
-          id: 1,
-          date: '2023-05-16 14:30',
-          admin: 'Admin User',
-          action: '添加模块',
-          details: '添加了新模块 "Plant Biology"'
-        },
-        {
-          id: 2,
-          date: '2023-05-16 11:20',
-          admin: 'Admin User',
-          action: '修改用户',
-          details: '更新了用户 "Emily Chen" 的年级信息'
-        },
-        {
-          id: 3,
-          date: '2023-05-15 16:45',
-          admin: 'Admin User',
-          action: '添加词汇',
-          details: '向 "Cell Structure" 模块添加了5个新词汇'
-        },
-        {
-          id: 4,
-          date: '2023-05-15 09:30',
-          admin: 'Admin User',
-          action: '修改模块',
-          details: '更新了 "DNA & Genetics" 模块的描述'
-        },
-        {
-          id: 5,
-          date: '2023-05-14 14:15',
-          admin: 'Admin User',
-          action: '删除词汇',
-          details: '从 "Cell Structure" 模块删除了1个词汇'
-        }
-      ];
     };
     
     // 修改管理员密码
@@ -455,11 +457,13 @@ export default defineComponent({
     
     // 页面加载时获取数据
     onMounted(() => {
+      loading.value = true;
       loadDashboardData();
     });
     
     return {
       stats,
+      loading,
       recentActions,
       actionColumns,
       getActionBadgeColor,

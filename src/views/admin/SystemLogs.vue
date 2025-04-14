@@ -210,7 +210,7 @@
             <q-item>
               <q-item-section>
                 <q-item-label caption>用户</q-item-label>
-                <q-item-label>{{ selectedLog.user || 'System' }}</q-item-label>
+                <q-item-label>{{ selectedLog.userName || 'System' }}</q-item-label>
               </q-item-section>
             </q-item>
             
@@ -261,6 +261,7 @@
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
 import { date, useQuasar } from 'quasar'
+import api from '../../services/api'
 
 export default defineComponent({
   name: 'SystemLogs',
@@ -302,7 +303,7 @@ export default defineComponent({
       { name: 'timestamp', label: '时间', field: 'timestamp', sortable: true, align: 'left' },
       { name: 'type', label: '类型', field: 'type', sortable: true, align: 'left' },
       { name: 'level', label: '级别', field: 'level', sortable: true, align: 'center' },
-      { name: 'user', label: '用户', field: 'user', sortable: true, align: 'left' },
+      { name: 'user', label: '用户', field: 'userName', sortable: true, align: 'left' },
       { name: 'message', label: '消息', field: 'message', sortable: true, align: 'left' },
       { name: 'actions', label: '操作', field: 'actions', align: 'center' }
     ]
@@ -311,7 +312,8 @@ export default defineComponent({
       sortBy: 'timestamp',
       descending: true,
       page: 1,
-      rowsPerPage: 15
+      rowsPerPage: 15,
+      rowsNumber: 0
     })
     
     // 对话框
@@ -319,19 +321,255 @@ export default defineComponent({
     const selectedLog = ref(null)
     const clearLogsDialog = ref(false)
     
-    // 方法
-    const refreshLogs = () => {
+    // 从后端API获取日志数据
+    const refreshLogs = async () => {
       loading.value = true
       
-      // 模拟API请求延迟
-      setTimeout(() => {
-        // 实际应用中，这里会从API获取日志数据
-        // 模拟生成测试数据
-        generateMockLogs()
+      try {
+        // 构建API查询参数
+        const params = {
+          page: pagination.value.page,
+          limit: pagination.value.rowsPerPage,
+          sortDesc: pagination.value.descending
+        }
+        
+        // 添加筛选条件
+        if (logType.value) {
+          params.type = logType.value
+        }
+        
+        if (logLevel.value) {
+          params.level = logLevel.value
+        }
+        
+        if (searchText.value) {
+          params.search = searchText.value
+        }
+        
+        if (dateRange.value.from) {
+          params.fromDate = dateRange.value.from
+        }
+        
+        if (dateRange.value.to) {
+          params.toDate = dateRange.value.to
+        }
+        
+        // 调用API获取日志
+        const response = await api.get('/logs', { params })
+        
+        // 更新日志数据和分页信息
+        logs.value = response.data.logs.map(log => {
+          // 格式化时间戳
+          const timestamp = date.formatDate(new Date(log.timestamp), 'YYYY-MM-DD HH:mm:ss')
+          
+          return {
+            ...log,
+            timestamp,
+            // 用户名显示处理
+            userName: log.userName || (log.userId ? `ID: ${log.userId}` : 'System')
+          }
+        })
+        
+        // 更新分页信息
+        pagination.value.rowsNumber = response.data.total
+      } catch (error) {
+        console.error('获取日志失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '获取日志失败，请稍后重试',
+          icon: 'error'
+        })
+        
+        // 使用模拟数据作为后备方案
+        if (logs.value.length === 0) {
+          generateMockLogs()
+        }
+      } finally {
         loading.value = false
-      }, 800)
+      }
     }
     
+    // 显示日志详情
+    const showLogDetails = (log) => {
+      selectedLog.value = log
+      logDetailDialog.value = true
+    }
+    
+    // 配色方案
+    const getLevelColor = (level) => {
+      switch (level) {
+        case 'info': return 'info'
+        case 'warning': return 'warning'
+        case 'error': return 'negative'
+        case 'fatal': return 'deep-orange'
+        default: return 'grey'
+      }
+    }
+    
+    // 设置日期范围
+    const setDateRange = (range) => {
+      const today = new Date()
+      
+      switch (range) {
+        case 'today':
+          dateRange.value.from = date.formatDate(today, 'YYYY-MM-DD')
+          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
+          break
+        case 'week':
+          dateRange.value.from = date.formatDate(date.subtractFromDate(today, { days: 7 }), 'YYYY-MM-DD')
+          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
+          break
+        case 'month':
+          dateRange.value.from = date.formatDate(date.subtractFromDate(today, { days: 30 }), 'YYYY-MM-DD')
+          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
+          break
+      }
+      
+      refreshLogs()
+    }
+    
+    // 确认清空日志对话框
+    const confirmClearLogs = () => {
+      clearLogsDialog.value = true
+    }
+    
+    // 清空日志
+    const clearLogs = async () => {
+      loading.value = true
+      
+      try {
+        // 构建API查询参数
+        const params = {}
+        
+        if (logType.value) {
+          params.type = logType.value
+        }
+        
+        if (logLevel.value) {
+          params.level = logLevel.value
+        }
+        
+        if (dateRange.value.from && dateRange.value.to) {
+          params.fromDate = dateRange.value.from
+          params.toDate = dateRange.value.to
+        }
+        
+        // 调用API清空日志
+        const response = await api.delete('/logs', { params })
+        
+        $q.notify({
+          color: 'positive',
+          message: `成功清空${response.data.count}条日志`,
+          icon: 'delete'
+        })
+        
+        // 刷新日志列表
+        refreshLogs()
+      } catch (error) {
+        console.error('清空日志失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '清空日志失败，请稍后重试',
+          icon: 'error'
+        })
+      } finally {
+        loading.value = false
+      }
+    }
+    
+    // 导出日志
+    const exportLogs = async () => {
+      loading.value = true
+      
+      try {
+        // 构建API查询参数
+        const params = {}
+        
+        if (logType.value) {
+          params.type = logType.value
+        }
+        
+        if (logLevel.value) {
+          params.level = logLevel.value
+        }
+        
+        if (searchText.value) {
+          params.search = searchText.value
+        }
+        
+        if (dateRange.value.from) {
+          params.fromDate = dateRange.value.from
+        }
+        
+        if (dateRange.value.to) {
+          params.toDate = dateRange.value.to
+        }
+        
+        // 构建完整URL
+        const baseUrl = api.defaults.baseURL || ''
+        const token = localStorage.getItem('token')
+        
+        // 创建一个隐藏的a标签用于下载
+        const a = document.createElement('a')
+        a.style.display = 'none'
+        document.body.appendChild(a)
+        
+        // 构建导出URL
+        let exportUrl = `${baseUrl}/logs/export`
+        
+        // 添加查询参数
+        const queryParams = new URLSearchParams(params).toString()
+        if (queryParams) {
+          exportUrl += `?${queryParams}`
+        }
+        
+        // 设置下载链接和文件名
+        a.href = exportUrl
+        a.download = `logs_${date.formatDate(new Date(), 'YYYY-MM-DD')}.csv`
+        
+        // 设置认证头
+        const headers = new Headers()
+        headers.append('Authorization', `Bearer ${token}`)
+        
+        // 使用fetch获取文件内容
+        const response = await fetch(exportUrl, { headers })
+        
+        if (!response.ok) {
+          throw new Error('导出失败')
+        }
+        
+        const blob = await response.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        
+        // 更新下载链接并触发点击
+        a.href = blobUrl
+        a.click()
+        
+        // 清理
+        URL.revokeObjectURL(blobUrl)
+        document.body.removeChild(a)
+        
+        $q.notify({
+          color: 'positive',
+          message: '日志已导出',
+          icon: 'file_download'
+        })
+      } catch (error) {
+        console.error('导出日志失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '导出日志失败，请稍后重试',
+          icon: 'error'
+        })
+      } finally {
+        loading.value = false
+      }
+    }
+    
+    // 模拟数据生成函数（仅在API失败时作为后备使用）
     const generateMockLogs = () => {
       const mockLogs = []
       const types = ['system', 'user', 'database', 'security', 'api']
@@ -397,7 +635,7 @@ export default defineComponent({
           timestamp: date.formatDate(logDate, 'YYYY-MM-DD HH:mm:ss'),
           type,
           level,
-          user: user !== 'system' ? user : null,
+          userName: user !== 'system' ? user : null,
           ip: `192.168.1.${Math.floor(Math.random() * 255)}`,
           message,
           details: level === 'error' || level === 'fatal' ? {
@@ -410,96 +648,23 @@ export default defineComponent({
         })
       }
       
-      // 应用筛选
-      logs.value = mockLogs.filter(log => {
-        let match = true
-        
-        // 类型筛选
-        if (logType.value && log.type !== logType.value) {
-          match = false
-        }
-        
-        // 级别筛选
-        if (logLevel.value && log.level !== logLevel.value) {
-          match = false
-        }
-        
-        // 关键词搜索
-        if (searchText.value && !log.message.toLowerCase().includes(searchText.value.toLowerCase())) {
-          match = false
-        }
-        
-        // 日期范围筛选
-        const logDate = date.extractDate(log.timestamp, 'YYYY-MM-DD')
-        const fromDate = date.extractDate(dateRange.value.from, 'YYYY-MM-DD')
-        const toDate = date.extractDate(dateRange.value.to, 'YYYY-MM-DD')
-        
-        if (logDate < fromDate || logDate > toDate) {
-          match = false
-        }
-        
-        return match
+      logs.value = mockLogs
+      
+      $q.notify({
+        color: 'warning',
+        message: '使用模拟数据显示，API连接失败',
+        icon: 'warning'
       })
     }
     
-    const showLogDetails = (log) => {
-      selectedLog.value = log
-      logDetailDialog.value = true
-    }
-    
-    const getLevelColor = (level) => {
-      switch (level) {
-        case 'info': return 'info'
-        case 'warning': return 'warning'
-        case 'error': return 'negative'
-        case 'fatal': return 'deep-orange'
-        default: return 'grey'
-      }
-    }
-    
-    const setDateRange = (range) => {
-      const today = new Date()
-      
-      switch (range) {
-        case 'today':
-          dateRange.value.from = date.formatDate(today, 'YYYY-MM-DD')
-          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
-          break
-        case 'week':
-          dateRange.value.from = date.formatDate(date.subtractFromDate(today, { days: 7 }), 'YYYY-MM-DD')
-          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
-          break
-        case 'month':
-          dateRange.value.from = date.formatDate(date.subtractFromDate(today, { days: 30 }), 'YYYY-MM-DD')
-          dateRange.value.to = date.formatDate(today, 'YYYY-MM-DD')
-          break
-      }
+    // 处理表格分页改变
+    const onPaginationChange = (props) => {
+      pagination.value.page = props.pagination.page
+      pagination.value.rowsPerPage = props.pagination.rowsPerPage
+      pagination.value.sortBy = props.pagination.sortBy
+      pagination.value.descending = props.pagination.descending
       
       refreshLogs()
-    }
-    
-    const confirmClearLogs = () => {
-      clearLogsDialog.value = true
-    }
-    
-    const clearLogs = () => {
-      // 实际应用中，这里会调用API清空日志
-      logs.value = []
-      
-      $q.notify({
-        color: 'positive',
-        message: '日志已清空',
-        icon: 'delete'
-      })
-    }
-    
-    const exportLogs = () => {
-      // 实际应用中，这里会调用API导出日志
-      $q.notify({
-        color: 'positive',
-        message: '日志已导出',
-        icon: 'file_download'
-      })
     }
     
     onMounted(() => {
@@ -526,7 +691,8 @@ export default defineComponent({
       setDateRange,
       confirmClearLogs,
       clearLogs,
-      exportLogs
+      exportLogs,
+      onPaginationChange
     }
   }
 })

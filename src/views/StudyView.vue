@@ -4,6 +4,7 @@
       <q-btn icon="arrow_back" flat round dense @click="goBack" />
       <div class="q-ml-md">
         <div class="text-h6">{{ moduleTitle }}</div>
+        <div class="text-caption text-grey-7">Chapter {{ userStore.getModuleChapter(moduleId) }}</div>
         <div class="row items-center" v-if="totalTerms > 0">
           <q-rating
             v-model="currentTermIndex"
@@ -280,11 +281,31 @@ export default defineComponent({
     }
     
     const rateKnowledge = (rating) => {
-      nextTerm()
+      // 先做认证状态诊断
+      const authStatus = userStore.checkAuthStatus();
+      console.log(`[StudyView] 准备更新模块ID=${moduleId.value}的学习进度，认证状态:`, authStatus);
       
+      // 处理评分并更新进度
       if (rating >= 3) {
-        userStore.updateProgress(moduleId.value, 1)
+        const currentTermId = currentTerm.value?.id;
+        console.log(`[StudyView] 用户标记词汇为"已学会"，词汇ID=${currentTermId}，评分=${rating}`);
+        
+        try {
+          // 传入当前词汇ID而不是数字1，以确保正确记录所学词汇
+          userStore.updateProgress(moduleId.value, currentTermId || 1)
+            .then(() => {
+              console.log(`[StudyView] 进度更新请求已发送`);
+            })
+            .catch(err => {
+              console.error(`[StudyView] 进度更新失败:`, err);
+            });
+        } catch (error) {
+          console.error(`[StudyView] 调用更新进度方法失败:`, error);
+        }
       }
+      
+      // 前往下一个词汇
+      nextTerm();
     }
     
     const goToQuiz = () => {
@@ -311,7 +332,8 @@ export default defineComponent({
       goToQuiz,
       goBack,
       loading,
-      loadError
+      loadError,
+      userStore
     }
   }
 })

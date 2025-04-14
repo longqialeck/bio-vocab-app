@@ -1,6 +1,7 @@
 const { User, Progress } = require('../models');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
+const logger = require('./logController');
 
 // Calculate user learning streak
 const calculateStreak = async (userId) => {
@@ -261,6 +262,13 @@ exports.createUser = async (req, res) => {
       isAdmin: isAdmin || false
     });
     
+    // 记录管理操作日志
+    logger.logUser('info', `管理员创建了新用户: ${user.name} (${user.email})`, 
+      req.user.id, req.user.name, req.clientIp, {
+        newUserId: user.id,
+        isAdmin: user.isAdmin
+      }).catch(err => console.error('记录日志失败:', err));
+    
     res.status(201).json({
       id: user.id,
       name: user.name,
@@ -317,6 +325,13 @@ exports.deleteUser = async (req, res) => {
     }
     
     await user.destroy();
+    
+    // 记录管理操作日志
+    logger.logUser('warning', `管理员删除了用户: ${user.name} (${user.email})`, 
+      req.user.id, req.user.name, req.clientIp, {
+        deletedUserId: user.id,
+        wasAdmin: user.isAdmin
+      }).catch(err => console.error('记录日志失败:', err));
     
     res.json({ message: '用户已删除' });
   } catch (error) {
@@ -394,6 +409,12 @@ exports.resetPassword = async (req, res) => {
     user.password = newPassword;
     await user.save();
     
+    // 记录安全日志
+    logger.logSecurity('warning', `管理员重置了用户密码: ${user.name} (${user.email})`, 
+      req.user.id, req.user.name, req.clientIp, {
+        targetUserId: user.id
+      }).catch(err => console.error('记录日志失败:', err));
+    
     res.json({ message: '密码已重置' });
   } catch (error) {
     console.error(error);
@@ -412,6 +433,13 @@ exports.unlockAccount = async (req, res) => {
     
     // 重置失败尝试次数并解锁
     await user.resetLoginAttempts();
+    
+    // 记录安全日志
+    logger.logSecurity('info', `管理员解锁了用户账户: ${user.name} (${user.email})`, 
+      req.user.id, req.user.name, req.clientIp, {
+        targetUserId: user.id,
+        previousAttempts: user.failedLoginAttempts
+      }).catch(err => console.error('记录日志失败:', err));
     
     res.json({ message: '账户已解锁' });
   } catch (error) {

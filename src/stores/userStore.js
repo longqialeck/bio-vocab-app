@@ -12,7 +12,16 @@ export const useUserStore = defineStore('user', {
       streak: 0
     },
     learningModules: [],
-    allUsers: [] // 存储所有用户，仅管理员可访问
+    allUsers: [], // 存储所有用户，仅管理员可访问
+    // 模块ID到章节号的映射
+    moduleChapterMap: {
+      0: 0,  // 基础词汇对应Chapter 0
+      1: 1,  // 生物体简介对应Chapter 1
+      2: 2,  // 细胞物质移动对应Chapter 2
+      3: 3,  // 生物分子对应Chapter 3
+      4: 4,  // 酶对应Chapter 4
+      5: 5   // 其他章节...
+    }
   }),
   
   getters: {
@@ -20,7 +29,11 @@ export const useUserStore = defineStore('user', {
     getProgress: (state) => state.progress,
     getModules: (state) => state.learningModules,
     isAdmin: (state) => state.user?.isAdmin || false,
-    getAllUsers: (state) => state.allUsers
+    getAllUsers: (state) => state.allUsers,
+    // 获取模块对应的章节号的getter
+    getModuleChapter: (state) => (moduleId) => {
+      return state.moduleChapterMap[moduleId] || moduleId
+    }
   },
   
   actions: {
@@ -190,9 +203,17 @@ export const useUserStore = defineStore('user', {
     
     async updateProgress(moduleId, completedTermIds) {
       try {
-        if (!this.user || !this.user._id) {
-          console.error('用户未登录，无法更新进度');
-          return;
+        // 修复认证检查逻辑
+        if (!this.user) {
+          console.error('用户对象不存在，无法更新进度');
+          return Promise.reject(new Error('用户对象不存在'));
+        }
+        
+        // 检查令牌存在性
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('认证令牌不存在，无法更新进度');
+          return Promise.reject(new Error('认证令牌不存在'));
         }
         
         console.log(`更新进度: 模块=${moduleId}, 完成词汇数=${Array.isArray(completedTermIds) ? completedTermIds.length : completedTermIds}`);
@@ -200,13 +221,16 @@ export const useUserStore = defineStore('user', {
         // 确保completedTermIds是数组
         let termIds = completedTermIds;
         if (!Array.isArray(completedTermIds)) {
-          if (typeof completedTermIds === 'number') {
-            // 如果传入的是数字（例如正确答案数），创建相应数量的模拟ID
-            termIds = Array(completedTermIds).fill().map((_, i) => `term_${i+1}`);
-          } else {
+          if (typeof completedTermIds === 'number' || typeof completedTermIds === 'string') {
+            // 如果传入单个ID，转换为数组
             termIds = [completedTermIds];
+          } else if (!completedTermIds) {
+            console.error('无效的词汇ID:', completedTermIds);
+            return Promise.reject(new Error('无效的词汇ID'));
           }
         }
+        
+        console.log(`准备发送进度更新请求: 模块ID=${moduleId}, 完成词汇=${JSON.stringify(termIds)}`);
         
         // 更新API中的进度
         const response = await api.put(`/progress/module/${moduleId}`, {
@@ -214,18 +238,27 @@ export const useUserStore = defineStore('user', {
         });
         
         if (response.data) {
+          console.log(`进度更新成功:`, response.data);
+          
           // 更新本地模块进度
-          const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId);
+          const moduleIndex = this.learningModules.findIndex(m => m.id === moduleId || m.id === Number(moduleId));
           if (moduleIndex >= 0) {
             this.learningModules[moduleIndex].progress = response.data.progress;
             console.log(`本地模块进度已更新: ${response.data.progress}%`);
+          } else {
+            console.warn(`未找到模块ID=${moduleId}的本地数据`);
           }
           
           // 重新获取用户进度数据以更新总体进度
           await this.loadProgress();
+          
+          return Promise.resolve(response.data);
         }
+        
+        return Promise.resolve(null);
       } catch (error) {
-        console.error('更新进度失败:', error);
+        console.error('更新进度失败:', error.message, error);
+        return Promise.reject(error);
       }
     },
 
@@ -339,6 +372,24 @@ export const useUserStore = defineStore('user', {
         console.error('密码更新失败:', error)
         throw error
       }
+    },
+
+    // 诊断函数：检查认证状态
+    checkAuthStatus() {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('bioVocabUser');
+      
+      const authStatus = {
+        hasToken: !!token,
+        tokenValue: token ? `${token.substring(0, 10)}...` : null,
+        hasUserData: !!userData,
+        isAuthenticated: this.isAuthenticated,
+        hasUserObject: !!this.user,
+        userId: this.user?.id
+      };
+      
+      console.log('[AUTH_DIAGNOSIS] 认证状态检查:', authStatus);
+      return authStatus;
     }
   }
 }) 

@@ -1,9 +1,13 @@
 const { sequelize } = require('../config/db');
+const Sequelize = require('sequelize');
+
+// 直接导入模型（模型已在各自文件中定义）
 const User = require('./User');
 const Module = require('./Module');
 const Term = require('./Term');
 const TermProgress = require('./TermProgress');
 const Progress = require('./Progress');
+const Log = require('./Log');
 
 // Define associations
 // User - Module associations
@@ -34,11 +38,16 @@ TermProgress.belongsTo(Term, { foreignKey: 'termId' });
 User.hasMany(Term, { foreignKey: 'createdById' });
 Term.belongsTo(User, { foreignKey: 'createdById', as: 'createdBy' });
 
+// 确保从Log到User的外键关联正确设置
+Log.belongsTo(User, { foreignKey: 'userId', constraints: false });
+
 module.exports = {
   sequelize,
+  Sequelize,
   User,
   Module,
   Term,
   TermProgress,
-  Progress
+  Progress,
+  Log
 }; 

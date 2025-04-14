@@ -9,12 +9,17 @@
         class="bg-grey-2 text-primary q-mb-md"
         align="left"
         narrow-indicator
+        @update:model-value="onTabChange"
       >
         <q-tab name="general" label="通用设置" icon="settings" />
         <q-tab name="security" label="安全设置" icon="security" />
         <q-tab name="backup" label="数据备份" icon="backup" />
         <q-tab name="api" label="API集成" icon="api" />
       </q-tabs>
+      
+      <q-inner-loading :showing="loading">
+        <q-spinner-dots size="50px" color="primary" />
+      </q-inner-loading>
       
       <q-tab-panels v-model="activeTab" animated>
         <q-tab-panel name="general">
@@ -393,6 +398,7 @@
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
+import api from '../../services/api'
 
 export default defineComponent({
   name: 'SystemSettings',
@@ -403,6 +409,7 @@ export default defineComponent({
     const saving = ref(false)
     const creatingBackup = ref(false)
     const showSecrets = ref(false)
+    const loading = ref(false)
     
     // 对话框
     const deleteBackupDialog = ref(false)
@@ -491,68 +498,175 @@ export default defineComponent({
       { label: '每月', value: 'monthly' }
     ]
     
+    // 从API加载所有设置
+    const loadAllSettings = async () => {
+      loading.value = true
+      
+      try {
+        const response = await api.get('/settings')
+        const settings = response.data
+        
+        // 更新各个设置类别
+        if (settings.general) {
+          generalSettings.value = settings.general
+        }
+        
+        if (settings.security) {
+          securitySettings.value = settings.security
+        }
+        
+        if (settings.backup) {
+          backupSettings.value = settings.backup
+        }
+        
+        if (settings.api) {
+          apiSettings.value = settings.api
+        }
+        
+        console.log('设置已从API加载')
+      } catch (error) {
+        console.error('加载设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '加载系统设置失败',
+          icon: 'error'
+        })
+      } finally {
+        loading.value = false
+      }
+    }
+    
+    // 加载特定类型的设置
+    const loadSettings = async (type) => {
+      try {
+        const response = await api.get(`/settings/${type}`)
+        
+        switch (type) {
+          case 'general':
+            generalSettings.value = response.data
+            break
+          case 'security':
+            securitySettings.value = response.data
+            break
+          case 'backup':
+            backupSettings.value = response.data
+            break
+          case 'api':
+            apiSettings.value = response.data
+            break
+        }
+        
+        console.log(`${type}设置已从API加载`)
+      } catch (error) {
+        console.error(`加载${type}设置失败:`, error)
+        
+        $q.notify({
+          color: 'negative',
+          message: `加载${type}设置失败`,
+          icon: 'error'
+        })
+      }
+    }
+    
     // 保存通用设置
-    const saveGeneralSettings = () => {
+    const saveGeneralSettings = async () => {
       saving.value = true
       
-      // 模拟API请求
-      setTimeout(() => {
-        saving.value = false
+      try {
+        const response = await api.put('/settings/general', generalSettings.value)
         
         $q.notify({
           color: 'positive',
           message: '通用设置已保存',
           icon: 'check_circle'
         })
-      }, 1000)
+      } catch (error) {
+        console.error('保存通用设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '保存设置失败',
+          icon: 'error'
+        })
+      } finally {
+        saving.value = false
+      }
     }
     
     // 保存安全设置
-    const saveSecuritySettings = () => {
+    const saveSecuritySettings = async () => {
       saving.value = true
       
-      // 模拟API请求
-      setTimeout(() => {
-        saving.value = false
+      try {
+        const response = await api.put('/settings/security', securitySettings.value)
         
         $q.notify({
           color: 'positive',
           message: '安全设置已保存',
           icon: 'check_circle'
         })
-      }, 1000)
+      } catch (error) {
+        console.error('保存安全设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '保存设置失败',
+          icon: 'error'
+        })
+      } finally {
+        saving.value = false
+      }
     }
     
     // 保存备份设置
-    const saveBackupSettings = () => {
+    const saveBackupSettings = async () => {
       saving.value = true
       
-      // 模拟API请求
-      setTimeout(() => {
-        saving.value = false
+      try {
+        const response = await api.put('/settings/backup', backupSettings.value)
         
         $q.notify({
           color: 'positive',
           message: '备份设置已保存',
           icon: 'check_circle'
         })
-      }, 1000)
+      } catch (error) {
+        console.error('保存备份设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '保存设置失败',
+          icon: 'error'
+        })
+      } finally {
+        saving.value = false
+      }
     }
     
     // 保存API设置
-    const saveApiSettings = () => {
+    const saveApiSettings = async () => {
       saving.value = true
       
-      // 模拟API请求
-      setTimeout(() => {
-        saving.value = false
+      try {
+        const response = await api.put('/settings/api', apiSettings.value)
         
         $q.notify({
           color: 'positive',
           message: 'API设置已保存',
           icon: 'check_circle'
         })
-      }, 1000)
+      } catch (error) {
+        console.error('保存API设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '保存设置失败',
+          icon: 'error'
+        })
+      } finally {
+        saving.value = false
+      }
     }
     
     // 复制API密钥
@@ -572,40 +686,52 @@ export default defineComponent({
     }
     
     // 确认重新生成API密钥
-    const confirmRegenerateApiKey = () => {
-      // 模拟生成新的API密钥
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-      let newKey = 'sk_test_'
-      
-      for (let i = 0; i < 30; i++) {
-        newKey += chars.charAt(Math.floor(Math.random() * chars.length))
+    const confirmRegenerateApiKey = async () => {
+      try {
+        // 首先重置API设置
+        const response = await api.post('/settings/api/reset')
+        
+        // 更新API设置
+        apiSettings.value = response.data.settings
+        
+        $q.notify({
+          color: 'positive',
+          message: 'API密钥已重新生成',
+          icon: 'refresh'
+        })
+      } catch (error) {
+        console.error('重新生成API密钥失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '重新生成API密钥失败',
+          icon: 'error'
+        })
       }
-      
-      apiSettings.value.apiKey = newKey
-      
-      $q.notify({
-        color: 'positive',
-        message: 'API密钥已重新生成',
-        icon: 'refresh'
-      })
     }
     
     // 重置API设置
-    const resetApiSettings = () => {
-      apiSettings.value = {
-        apiKey: 'sk_test_51Ik9J7HKl3SxQ8zN2tvJcMQgxGvYgQ',
-        wechatAppId: 'wx123456789abcdef',
-        wechatAppSecret: '1234567890abcdef1234567890abcdef',
-        googleApiKey: 'AIzaSyBNLrJhOMz6idD05pzfn5lCPxw',
-        googleSheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-        enableGoogleSync: true
+    const resetApiSettings = async () => {
+      try {
+        const response = await api.post('/settings/api/reset')
+        
+        // 更新API设置
+        apiSettings.value = response.data.settings
+        
+        $q.notify({
+          color: 'info',
+          message: 'API设置已重置',
+          icon: 'refresh'
+        })
+      } catch (error) {
+        console.error('重置API设置失败:', error)
+        
+        $q.notify({
+          color: 'negative',
+          message: '重置API设置失败',
+          icon: 'error'
+        })
       }
-      
-      $q.notify({
-        color: 'info',
-        message: 'API设置已重置',
-        icon: 'refresh'
-      })
     }
     
     // 创建备份
@@ -668,8 +794,15 @@ export default defineComponent({
       selectedBackup.value = null
     }
     
+    // 处理标签页切换
+    const onTabChange = (tab) => {
+      // 切换标签页时加载对应的设置
+      loadSettings(tab)
+    }
+    
     onMounted(() => {
-      // 实际应用中，这里会从API加载配置数据
+      // 从API加载所有设置
+      loadAllSettings()
     })
     
     return {
@@ -677,6 +810,7 @@ export default defineComponent({
       saving,
       creatingBackup,
       showSecrets,
+      loading,
       deleteBackupDialog,
       regenerateApiKeyDialog,
       selectedBackup,
@@ -699,7 +833,8 @@ export default defineComponent({
       createBackup,
       downloadBackup,
       confirmDeleteBackup,
-      deleteBackup
+      deleteBackup,
+      onTabChange
     }
   }
 })

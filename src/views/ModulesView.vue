@@ -21,7 +21,7 @@
               <q-icon :name="module.icon" size="40px" color="primary" class="q-mr-md" />
               <div>
                 <div class="text-h6">{{ module.title }}</div>
-                <div class="text-caption">{{ module.totalTerms }} terms</div>
+                <div class="text-caption">Chapter {{ userStore.getModuleChapter(module.id) }} • {{ module.totalTerms }} terms</div>
               </div>
               <q-space />
               <div class="text-right">
@@ -64,7 +64,8 @@ export default defineComponent({
     return {
       modules,
       startModule,
-      goBack
+      goBack,
+      userStore
     }
   }
 })

@@ -77,7 +77,7 @@
         <div class="row items-center">
           <div class="col">
             <div class="text-subtitle1">{{ currentModule.title }}</div>
-            <div class="text-caption text-grey">Chapter 3 • {{ currentModule.totalTerms }} words</div>
+            <div class="text-caption text-grey">Chapter {{ userStore.getModuleChapter(currentModule.id) }} • {{ currentModule.totalTerms }} words</div>
           </div>
           <div class="col-4 text-right">{{ currentModule.progress }}% Complete</div>
         </div>
@@ -313,7 +313,8 @@ export default defineComponent({
       goToAdmin,
       goToUserProfile,
       goToComprehensiveQuiz,
-      onStartButtonClick
+      onStartButtonClick,
+      userStore
     }
   }
 })
