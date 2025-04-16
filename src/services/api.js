@@ -62,6 +62,7 @@ api.interceptors.response.use(
         errorMsg.includes('令牌无效') || 
         errorMsg.includes('已过期') ||
         errorMsg.includes('无权访问') ||
+        errorMsg.includes('invalid signature') ||
         error.message.includes('invalid signature')
       ) {
         console.log('检测到令牌无效，正在清除本地存储...');

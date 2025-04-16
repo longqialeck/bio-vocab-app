@@ -123,6 +123,18 @@ export default defineComponent({
           timeout: 5000
         });
       };
+      
+      // 检查URL参数中是否有错误信息
+      const urlParams = new URLSearchParams(window.location.search);
+      const errorMsg = urlParams.get('error');
+      if (errorMsg) {
+        $q.notify({
+          color: 'negative',
+          message: decodeURIComponent(errorMsg),
+          icon: 'error',
+          timeout: 5000
+        });
+      }
     })
     
     const onSubmit = async () => {

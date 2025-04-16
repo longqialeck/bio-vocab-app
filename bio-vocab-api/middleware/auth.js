@@ -5,95 +5,59 @@ const logger = require('../controllers/logController');
 
 // 保护路由中间件
 exports.protect = async (req, res, next) => {
-  let token;
-
-  // 从请求头中获取token
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    // 记录安全日志
-    try {
-      await logger.logSecurity('warning', '访问受保护路由无令牌', null, null, req.clientIp, {
-        path: req.path,
-        method: req.method
-      });
-    } catch (logErr) {
-      console.error('记录安全日志失败:', logErr);
-    }
-    
-    return res.status(401).json({ message: '无权访问，请先登录' });
-  }
-
   try {
-    // 添加JWT验证调试信息 
-    console.log('JWT验证信息:', {
-      tokenLength: token.length,
-      tokenStart: token.substring(0, 10) + '...',
-      secretLength: process.env.JWT_SECRET.length,
-      secretStart: process.env.JWT_SECRET.substring(0, 5) + '...',
-      secretEnd: '...' + process.env.JWT_SECRET.substring(process.env.JWT_SECRET.length - 5),
-      environment: process.env.NODE_ENV
+    let token;
+    
+    // 记录请求头信息
+    console.log('请求头:', {
+      authorization: req.headers.authorization ? '存在' : '不存在',
+      cookie: req.headers.cookie ? '存在' : '不存在'
     });
 
-    // 验证token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log('JWT验证成功，用户ID:', decoded.id);
-
-    // 检查用户是否存在
-    const user = await User.findByPk(decoded.id);
-
-    if (!user) {
-      // 记录安全日志
-      try {
-        await logger.logSecurity('warning', '使用有效令牌但用户不存在', decoded.id, null, req.clientIp, {
-          path: req.path,
-          method: req.method
-        });
-      } catch (logErr) {
-        console.error('记录安全日志失败:', logErr);
-      }
-      
-      return res.status(401).json({ message: '用户不存在' });
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
     }
 
-    // 检查账户是否被锁定
-    if (user.isLocked) {
-      // 记录安全日志
-      try {
-        await logger.logSecurity('warning', '锁定用户尝试访问', user.id, user.name, req.clientIp, {
-          path: req.path,
-          method: req.method
-        });
-      } catch (logErr) {
-        console.error('记录安全日志失败:', logErr);
-      }
-      
-      return res.status(403).json({ message: '您的账户已被锁定，请联系管理员' });
+    if (!token) {
+      console.log('未找到token');
+      return res.status(401).json({ message: '未授权访问' });
     }
 
-    // 设置req.user为已验证的用户
-    req.user = user;
+    // 记录token信息
+    console.log('Token信息:', {
+      length: token.length,
+      prefix: token.substring(0, 10) + '...',
+      secret: process.env.JWT_SECRET ? process.env.JWT_SECRET.substring(0, 5) + '...' : '未设置'
+    });
 
-    // 记录用户活动
-    user.lastActivity = new Date();
-    await user.save();
-
-    next();
-  } catch (error) {
-    // 记录安全日志
     try {
-      await logger.logSecurity('warning', `令牌验证失败: ${error.message}`, null, null, req.clientIp, {
-        path: req.path,
-        method: req.method,
-        error: error.message
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Token验证成功:', {
+        userId: decoded.id,
+        exp: new Date(decoded.exp * 1000).toISOString()
       });
-    } catch (logErr) {
-      console.error('记录安全日志失败:', logErr);
+      
+      const user = await User.findByPk(decoded.id);
+      if (!user) {
+        console.log('用户不存在:', decoded.id);
+        return res.status(401).json({ message: '用户不存在' });
+      }
+      
+      req.user = user;
+      next();
+    } catch (error) {
+      console.log('Token验证失败:', {
+        error: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      return res.status(401).json({ message: '令牌无效或已过期' });
     }
-    
-    res.status(401).json({ message: '令牌无效或已过期' });
+  } catch (error) {
+    console.error('认证中间件错误:', error);
+    return res.status(500).json({ message: '服务器错误' });
   }
 };
 
