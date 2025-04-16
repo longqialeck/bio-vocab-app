@@ -86,6 +86,16 @@ app.use((req, res, next) => {
   next();
 });
 
+// API根路由
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'Bio Vocab API',
+    version: '1.0.0',
+    status: 'running',
+    environment: process.env.NODE_ENV
+  });
+});
+
 // 注册API路由
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
