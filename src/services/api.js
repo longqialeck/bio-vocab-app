@@ -99,4 +99,11 @@ api.interceptors.response.use(
   }
 );
 
+// 清除所有认证相关数据
+export const clearAuth = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('bioVocabUser');
+  sessionStorage.removeItem('token');
+};
+
 export default api; 

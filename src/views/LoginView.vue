@@ -78,7 +78,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import DnaLogo from '../components/DnaLogo.vue'
 import { useQuasar } from 'quasar'
-import api from '../services/api'
+import api, { clearAuth } from '../services/api'
 
 export default defineComponent({
   name: 'LoginView',
@@ -138,50 +138,23 @@ export default defineComponent({
     })
     
     const onSubmit = async () => {
-      loading.value = true
-      
       try {
-        console.log('尝试登录:', { email: email.value, password: password.value, rememberMe: rememberMe.value })
-        // 使用API进行登录
-        const response = await api.post('/auth/login', {
-          email: email.value,
-          password: password.value
-        });
-        
-        if (response.data && response.data.token) {
-          console.log('登录成功:', response.data)
-          
-          // 根据"记住我"选项决定存储位置
-          if (rememberMe.value) {
-            // 使用localStorage，关闭浏览器后仍然保留
-            localStorage.setItem('token', response.data.token);
-          } else {
-            // 使用sessionStorage，关闭浏览器后清除
-            sessionStorage.setItem('token', response.data.token);
-            localStorage.removeItem('token'); // 确保移除可能存在的localStorage中的token
-          }
-          
-          userStore.setUser(response.data.user);
-          
-          // 检查是否有登录后跳转路径
-          const redirectPath = localStorage.getItem('redirectAfterLogin');
-          if (redirectPath) {
-            console.log('登录成功，跳转到:', redirectPath);
-            localStorage.removeItem('redirectAfterLogin'); // 使用后清除
-            router.push(redirectPath);
-          } else {
-            router.push({ name: 'dashboard' });
-          }
-        }
-      } catch (error) {
-        console.error('登录失败:', error);
+        loading.value = true
+        await userStore.login({ email: email.value, password: password.value, rememberMe: rememberMe.value })
         $q.notify({
-          color: 'negative',
-          message: '用户名或密码错误',
-          icon: 'error'
-        });
+          type: 'positive',
+          message: '登录成功'
+        })
+        router.push('/')
+      } catch (error) {
+        console.error('Login error:', error)
+        clearAuth() // 清除可能损坏的 token
+        $q.notify({
+          type: 'negative',
+          message: error.response?.data?.message || '登录失败，请重试'
+        })
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     }
     
