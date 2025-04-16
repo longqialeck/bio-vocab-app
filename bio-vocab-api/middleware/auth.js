@@ -27,8 +27,19 @@ exports.protect = async (req, res, next) => {
   }
 
   try {
+    // 添加JWT验证调试信息 
+    console.log('JWT验证信息:', {
+      tokenLength: token.length,
+      tokenStart: token.substring(0, 10) + '...',
+      secretLength: process.env.JWT_SECRET.length,
+      secretStart: process.env.JWT_SECRET.substring(0, 5) + '...',
+      secretEnd: '...' + process.env.JWT_SECRET.substring(process.env.JWT_SECRET.length - 5),
+      environment: process.env.NODE_ENV
+    });
+
     // 验证token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('JWT验证成功，用户ID:', decoded.id);
 
     // 检查用户是否存在
     const user = await User.findByPk(decoded.id);

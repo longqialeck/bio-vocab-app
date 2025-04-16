@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import DnaLogo from '../components/DnaLogo.vue'
@@ -101,6 +101,30 @@ export default defineComponent({
     const adminPassword = ref('')
     const adminLoading = ref(false)
     
+    // 页面加载时自动清除旧令牌
+    onMounted(() => {
+      // 强制清除所有认证相关信息
+      localStorage.removeItem('token');
+      localStorage.removeItem('bioVocabUser');
+      sessionStorage.removeItem('token');
+      
+      // 检查是否有登录后跳转路径
+      const redirectPath = localStorage.getItem('redirectAfterLogin');
+      if (redirectPath) {
+        console.log('检测到登录后跳转路径:', redirectPath);
+      }
+      
+      // 为应用添加全局登录过期处理函数
+      window.showLoginExpiredMessage = (message) => {
+        $q.notify({
+          color: 'warning',
+          message: message || '您的登录已过期，请重新登录',
+          icon: 'warning',
+          timeout: 5000
+        });
+      };
+    })
+    
     const onSubmit = async () => {
       loading.value = true
       
@@ -126,7 +150,16 @@ export default defineComponent({
           }
           
           userStore.setUser(response.data.user);
-          router.push({ name: 'dashboard' });
+          
+          // 检查是否有登录后跳转路径
+          const redirectPath = localStorage.getItem('redirectAfterLogin');
+          if (redirectPath) {
+            console.log('登录成功，跳转到:', redirectPath);
+            localStorage.removeItem('redirectAfterLogin'); // 使用后清除
+            router.push(redirectPath);
+          } else {
+            router.push({ name: 'dashboard' });
+          }
         }
       } catch (error) {
         console.error('登录失败:', error);
@@ -192,11 +225,21 @@ export default defineComponent({
           // 关闭对话框
           adminLoginDialog.value = false;
           
+          // 检查是否有登录后跳转路径
+          const redirectPath = localStorage.getItem('redirectAfterLogin');
+          const shouldGoToAdminPanel = !redirectPath || redirectPath.includes('/admin');
+          
           // 导航前插入一个小延迟，确保状态已更新
-          console.log('准备导航到管理后台...');
+          console.log('准备导航...', shouldGoToAdminPanel ? '管理后台' : redirectPath);
           setTimeout(() => {
-            // 首先导航到admin路由，然后由路由配置自动重定向到admin-dashboard
-            router.push({ name: 'admin' });
+            if (shouldGoToAdminPanel) {
+              // 前往管理后台
+              router.push({ name: 'admin' });
+            } else {
+              // 前往指定页面
+              localStorage.removeItem('redirectAfterLogin'); // 使用后清除
+              router.push(redirectPath);
+            }
           }, 1000); // 延长延时，确保足够时间处理状态更新
         } else {
           $q.notify({
