@@ -400,11 +400,16 @@ export default defineComponent({
       if (!currentTerm.value || !currentTerm.value.term) return
       
       try {
-        const word = encodeURIComponent(currentTerm.value.term)
-        let url = ''
+        // 先去除前后空格，然后转换为小写
+        const word = currentTerm.value.term.trim().toLowerCase()
         
-        // 使用有道词典语音合成
-        url = `https://dict.youdao.com/dictvoice?audio=${word}&type=2`
+        if (!word) return
+        
+        // 针对"Cell membrane"等词汇，确保正确编码
+        console.log('播放词汇(小写处理):', word)
+        const encodedWord = encodeURIComponent(word)
+        const url = `https://dict.youdao.com/dictvoice?audio=${encodedWord}&type=2`
+        console.log('有道词典URL:', url)
         
         if (audioPlayer.value) {
           // 先设置播放中状态
