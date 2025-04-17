@@ -1,5 +1,8 @@
 <template>
   <q-page class="q-pa-md">
+    <!-- Hidden audio element for playing sounds -->
+    <audio ref="audioPlayer" style="display:none"></audio>
+    
     <div class="row items-center q-mb-lg">
       <q-btn icon="arrow_back" flat round dense @click="goBack" />
       <div class="q-ml-md">
@@ -24,7 +27,47 @@
           <div class="text-subtitle1 text-grey-7 q-mb-sm">What is the English term for:</div>
           <div class="foreign-term">{{ currentTerm.foreignTerm }}</div>
           
-          <div class="english-term q-mt-xl">{{ showAnswer ? currentTerm.term : '?' }}</div>
+          <div class="english-term q-mt-xl">
+            {{ showAnswer ? currentTerm.term : '?' }}
+            <div class="audio-controls" v-if="showAnswer">
+              <q-btn
+                flat
+                round
+                dense
+                color="primary"
+                icon="volume_up"
+                @click="ttsService !== 'browser' ? openExternalTTS() : playAudio()"
+                :loading="isPlaying"
+                :disable="false"
+              >
+                <q-tooltip>
+                  {{ ttsService === 'browser' ? '播放发音 (浏览器)' : '播放发音 (有道词典)' }}
+                </q-tooltip>
+              </q-btn>
+              <q-btn
+                v-if="isPlaying"
+                flat
+                round
+                dense
+                color="negative"
+                icon="stop"
+                @click="resetAudioState"
+              >
+                <q-tooltip>停止播放</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                dense
+                color="grey"
+                icon="settings"
+                @click="showAudioSettings = true"
+                :disable="isPlaying"
+              >
+                <q-tooltip>音频设置</q-tooltip>
+              </q-btn>
+            </div>
+          </div>
           
           <q-btn
             :color="showAnswer ? 'grey' : 'primary'"
@@ -101,14 +144,41 @@
     <div class="row justify-center q-mt-lg" v-if="currentTermIndex >= totalTerms && showAnswer && currentTerm">
       <q-btn color="primary" label="测验" @click="goToQuiz" />
     </div>
+
+    <!-- 音频设置对话框 -->
+    <q-dialog v-model="showAudioSettings" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">音频设置</div>
+        </q-card-section>
+
+        <q-card-section>
+          <q-option-group
+            v-model="ttsService"
+            :options="[
+              { label: '浏览器语音引擎 (需要Google服务)', value: 'browser' },
+              { label: '有道词典 (推荐)', value: 'youdao' }
+            ]"
+            color="primary"
+            type="radio"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="关闭" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted, watch } from 'vue'
+import { defineComponent, ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useVocabStore } from '../stores/vocabStore'
 import { useUserStore } from '../stores/userStore'
+import { useQuasar } from 'quasar'
+import { playWordAudio } from '../utils/audio'
 
 export default defineComponent({
   name: 'StudyView',
@@ -117,6 +187,7 @@ export default defineComponent({
     const router = useRouter()
     const vocabStore = useVocabStore()
     const userStore = useUserStore()
+    const $q = useQuasar()
     
     const moduleId = computed(() => {
       const paramId = route.params.moduleId;
@@ -163,6 +234,10 @@ export default defineComponent({
     const showAnswer = ref(false)
     const loading = ref(false)
     const loadError = ref('')
+    const isPlaying = ref(false)
+    const ttsService = ref('youdao') // 默认使用有道词典
+    const showAudioSettings = ref(false)
+    const audioPlayer = ref(null)
     
     const currentTerm = computed(() => {
       if (terms.value.length === 0) return null
@@ -178,6 +253,11 @@ export default defineComponent({
     onMounted(async () => {
       await loadModuleTerms()
       currentTermIndex.value = termId.value
+      
+      // 监听语音合成错误
+      window.addEventListener('speechSynthesisError', () => {
+        ttsService.value = 'youdao'
+      })
     })
     
     watch(moduleId, (newId, oldId) => {
@@ -316,6 +396,169 @@ export default defineComponent({
       router.push({ name: 'dashboard' })
     }
     
+    const openExternalTTS = () => {
+      if (!currentTerm.value || !currentTerm.value.term) return
+      
+      try {
+        const word = encodeURIComponent(currentTerm.value.term)
+        let url = ''
+        
+        // 使用有道词典语音合成
+        url = `https://dict.youdao.com/dictvoice?audio=${word}&type=2`
+        
+        if (audioPlayer.value) {
+          // 先设置播放中状态
+          isPlaying.value = true
+          
+          // 设置音频元素的来源
+          audioPlayer.value.src = url
+          
+          // 设置事件监听
+          audioPlayer.value.onended = () => {
+            isPlaying.value = false
+          }
+          
+          audioPlayer.value.onerror = (error) => {
+            console.error('音频播放失败:', error)
+            isPlaying.value = false
+            
+            // 如果内嵌播放失败，回退到新窗口打开
+            window.open(url, '_blank', 'width=0,height=0')
+            
+            $q.notify({
+              type: 'warning',
+              message: '内嵌播放失败，已在新窗口打开',
+              position: 'top',
+              timeout: 3000
+            })
+          }
+          
+          // 播放音频
+          audioPlayer.value.play().catch(error => {
+            console.error('音频播放失败:', error)
+            isPlaying.value = false
+            
+            // 如果播放API调用失败，回退到新窗口打开
+            window.open(url, '_blank', 'width=0,height=0')
+            
+            $q.notify({
+              type: 'warning',
+              message: '内嵌播放失败，已在新窗口打开',
+              position: 'top',
+              timeout: 3000
+            })
+          })
+        } else {
+          // 如果没有找到音频元素，则在新窗口打开
+          window.open(url, '_blank', 'width=0,height=0')
+          
+          $q.notify({
+            type: 'info',
+            message: '正在播放发音，如果没有声音，请检查是否被浏览器拦截',
+            position: 'top',
+            timeout: 3000
+          })
+        }
+      } catch (error) {
+        console.error('语音播放失败:', error)
+        isPlaying.value = false
+        $q.notify({
+          type: 'negative',
+          message: '语音播放失败，请检查网络连接',
+          position: 'top',
+          timeout: 3000
+        })
+      }
+    }
+    
+    const playAudio = async () => {
+      if (!currentTerm.value || !currentTerm.value.term || isPlaying.value) return
+      
+      try {
+        isPlaying.value = true
+        console.log('开始播放音频:', {
+          word: currentTerm.value.term,
+          audioUrl: currentTerm.value.audioUrl
+        })
+
+        // 检查浏览器兼容性
+        if (!('speechSynthesis' in window)) {
+          ttsService.value = 'youdao'
+          throw new Error('您的浏览器不支持语音合成功能，请使用外部TTS')
+        }
+
+        await playWordAudio(currentTerm.value.term, currentTerm.value.audioUrl)
+        console.log('音频播放完成')
+      } catch (error) {
+        console.error('播放单词音频失败:', error)
+        console.error('错误详情:', {
+          message: error.message,
+          stack: error.stack,
+          browserInfo: {
+            userAgent: navigator.userAgent,
+            speechSynthesis: !!window.speechSynthesis,
+            voices: window.speechSynthesis ? window.speechSynthesis.getVoices().length : 0
+          }
+        })
+        
+        // 显示更友好的错误消息
+        let errorMessage = '播放音频失败'
+        if (error.message.includes('not supported')) {
+          ttsService.value = 'youdao'
+          errorMessage = '浏览器不支持语音合成，已启用外部播放选项'
+        } else if (error.message.includes('timeout')) {
+          ttsService.value = 'youdao'
+          errorMessage = '语音合成超时，已启用外部播放选项'
+        }
+        
+        $q.notify({
+          type: 'warning',
+          message: errorMessage,
+          position: 'top',
+          timeout: 3000,
+          actions: [
+            { 
+              label: '使用外部播放', 
+              color: 'white', 
+              handler: () => {
+                ttsService.value = 'youdao'
+                openExternalTTS()
+              } 
+            }
+          ]
+        })
+      } finally {
+        isPlaying.value = false
+      }
+    }
+    
+    const resetAudioState = () => {
+      // 重置Web Speech API
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+      
+      // 重置音频元素
+      if (audioPlayer.value) {
+        audioPlayer.value.pause()
+        audioPlayer.value.currentTime = 0
+      }
+      
+      // 重置状态
+      isPlaying.value = false
+    }
+
+    // 在组件卸载时清理
+    onUnmounted(() => {
+      resetAudioState()
+      
+      // 移除事件监听器
+      if (audioPlayer.value) {
+        audioPlayer.value.onended = null
+        audioPlayer.value.onerror = null
+      }
+    })
+    
     return {
       moduleId,
       termId,
@@ -333,7 +576,14 @@ export default defineComponent({
       goBack,
       loading,
       loadError,
-      userStore
+      userStore,
+      isPlaying,
+      playAudio,
+      resetAudioState,
+      openExternalTTS,
+      showAudioSettings,
+      ttsService,
+      audioPlayer
     }
   }
 })
@@ -359,10 +609,22 @@ export default defineComponent({
   font-weight: bold;
   color: #4285F4;
   margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .definition {
-  font-size: 1.1rem;
-  line-height: 1.5;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #666;
+  margin: 1rem 0;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 </style> 
